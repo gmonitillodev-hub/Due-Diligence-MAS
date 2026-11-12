@@ -2,15 +2,21 @@
 from enum import Enum
 
 class AgentName(Enum):
+    
+        # Analyst agents
         TECH_REVIEWER = "Tech Reviewer"
         COMMERCIAL_ANALYST = "Commercial Analyst"
         COMPANY_PROFILER = "Company Profiler"
         ANALYST_SUPERVISOR = "Analyst Supervisor"
         TEAM_ANALYST = "Team Analyst"
+        
+        # Debate agents
         DEBEATE_FORMATTER = "Debeate Formatter"
         OPPORTUNITY_ANALYST = "Opportunity Analyst"
         RISK_ANALYST = "Risk Analyst"
         DEBEAT_JUDGE = "Debeat Judge"
+        
+        # Memo writer agent
         MEMO_WRITER = "Memo Writer"
 
 AGENTS = {

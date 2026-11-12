@@ -9,9 +9,10 @@ class BaseAgent(ABC):
         pass
     
     @abstractmethod
-    def build_tasks(self):
+    def build_tasks(self, topic: str = "", context: list = []):
         pass
     
     @abstractmethod
     def get_tasks(self):
         pass
+    

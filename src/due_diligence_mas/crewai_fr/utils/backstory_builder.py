@@ -19,6 +19,10 @@ def backstory_builder(agent_name: str) -> str:
     agent = AGENTS[agent_name]
 
     parts = [f"You are the {agent['name']}.", agent["description"]]
+    if agent.get("role"):
+        parts.append(f"Role: {agent['role']}")
+    if agent.get("skills"):
+        parts.append("Skills:\n" + "\n".join(f"- {s}" for s in agent["skills"]))
     if agent.get("responsibilities"):
         parts.append("Responsibilities:\n" + "\n".join(f"- {r}" for r in agent["responsibilities"]))
     if agent.get("constraints"):
