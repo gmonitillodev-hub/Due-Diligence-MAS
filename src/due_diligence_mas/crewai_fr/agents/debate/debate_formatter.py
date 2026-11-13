@@ -18,7 +18,7 @@ class DebateFormatter_Agent(BaseAgent):
             role=self.agent_raw["name"],
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
-            llm=LLM_PROVIDER(provider="groq").get_llm(),
+            llm=LLM_PROVIDER().get_llm(),
             tools=[],
             allow_delegation=False,
             verbose=True,

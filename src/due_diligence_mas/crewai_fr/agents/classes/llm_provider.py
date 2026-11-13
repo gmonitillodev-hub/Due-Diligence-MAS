@@ -16,12 +16,15 @@ class GroqSafeLLM(LLM):
 
 class LLM_PROVIDER():
     
-    def __init__(self, provider="groq", reasoning="", temperature=0.2):
+    def __init__(self, provider="", reasoning="", temperature=0.2):
         
         load_dotenv()
         
         if reasoning == "": 
             reasoning = os.getenv("DEFAULT_REASONING_LEVEL", "medium")
+            
+        if provider == "":
+            provider = os.getenv("DEFAULT_LLM_PROVIDER", "groq")
 
         self.temperature = temperature
         
@@ -37,22 +40,24 @@ class LLM_PROVIDER():
                     self.model = "groq/openai/gpt-oss-120b"
                 else:
                     raise ValueError("Invalid reasoning level. Choose 'medium' or 'high'.")
+                
+                self.llm = GroqSafeLLM(
+                                    model=self.model,
+                                    temperature=self.temperature,
+                                )
               
             case "openai":
                 if os.getenv("OPENAI_API_KEY") is None:
                     raise ValueError("OPENAI_API_KEY environment variable is not set.")
                 
                 if reasoning == "medium":
-                    self.model = "gpt-4o"
+                    self.model = "openai/gpt-6-luna"
                 elif reasoning == "high":
-                    self.model = "gpt-4o-reasoning"
+                    self.model = "openai/gpt-6-luna"
                 else:
                     raise ValueError("Invalid reasoning level. Choose 'medium' or 'high'.")
                
-        self.llm = GroqSafeLLM(
-                    model=self.model,
-                    temperature=self.temperature,
-                )
+        
 
     def get_llm(self):
         return self.llm 

@@ -1,7 +1,10 @@
-from crewai.flow.flow import Flow, start, listen, router
+from crewai.flow.flow import Flow, start, listen, router, or_
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.crews.analyst import AnalystCrew
+from due_diligence_mas.crewai_fr.crews.debate import DebateCrew
+from due_diligence_mas.utils.create_memo_file import generate_memo_file
 from pydantic import BaseModel
+
 from typing import Optional
 
 class DueDiligenceFlow_State(BaseModel):
@@ -22,10 +25,11 @@ class DueDiligenceFlow_State(BaseModel):
 class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     
     def _print_welcome_message(self):
-        print("-" * 80)
+        print("=" * 80)
         print(f"{'Due Diligence Flow':^80}")
-        print("\n   Welcome to the Due Diligence Flow. \n This flow will guide you through the process of \nanalyzing a target company, reviewing its technology, commercial aspects,\n and team dynamics, and generating a comprehensive report.\n")
-        print("-" * 80)
+        print("\n   Welcome to the Due Diligence Flow. \n   This flow will guide you through the process of analyzing a target company,\n   reviewing its technology, commercial aspects, and team dynamics, and\n   generating a comprehensive report.\n")
+        print("=" * 80)
+        print("\n")
     
     @start()
     def initialize_flow(self):
@@ -54,19 +58,63 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
                 "company_sector": self.state.company_sector
             },
             required_agents=[
-                AgentName.TECH_REVIEWER.value, 
-                AgentName.COMMERCIAL_ANALYST.value
+                    AgentName.TECH_REVIEWER.value, 
+                    AgentName.COMMERCIAL_ANALYST.value
                 ]
             )
-        analyst_crew.print_crew_info()
             
-        print("\nRunning the crew...")
         result = analyst_crew.run_crew()
                     
-        self.state.analysis_results = f"Analysis results for {self.state.company_name}. \n {result.raw}"
-        self.state.analysis_usage_info = f"Tokens Used: {result.token_usage}"
-        #self.state.analysis_total_time = f"Total Time: {result.total_time}"
-
+        self.state.analysis_results = result.raw
+        self.state.analysis_usage_info = result.token_usage
+        
+        return self.state.analysis_results
+    
+    @router(analyze_company)
+    def human_approval(self):
+        
+        print(f"{'='*80}")
+        print("\n   Here you can evaluate the analysis before proceeding with automatic debate. ")
+        print("\n   Analysis produced: \n")
+        print(f"         {self.state.analysis_results}")
+        
+        is_approved = True if input(f"\n    Can I proceed with the debate phase (y/n) ? ") == "y" else False
+        
+        return "debate" if is_approved else "final_report"
+    
+    @listen("debate")
+    def run_debate(self):
+        print(f"\n{'-'*80}")
+        print(f"    Running debate crew...")
+        
+        debate_crew = DebateCrew(
+                args={
+                    "analysis": self.state.analysis_results
+                }
+            )
+            
+        print("\n   Running the crew...")
+        result = debate_crew.run_crew()                
+        self.state.debate_results = result.raw
+        
+        return result
+    
+    @listen(or_("final_report", run_debate))
+    def generate_final_report(self):
+        print(f"\n Due diligence stopped ...")
+        
+        if not self.state.analysis_results:
+            raise ValueError("Analysis not produced")
+        
+        # CALL MEMO WRITER
+        
+        self.state.final_report = self.state.analysis_results
+        
+        report_path = generate_memo_file(self.state)
+        print(f" Report saved to: {report_path}")
+    
+        return report_path
+    
 if __name__ == "__main__":
     flow = DueDiligenceFlow(tracing=True)
     flow.kickoff()

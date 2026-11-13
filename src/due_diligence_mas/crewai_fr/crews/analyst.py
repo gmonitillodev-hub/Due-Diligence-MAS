@@ -1,10 +1,10 @@
 from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.constants.agents_definition import AgentName
-from due_diligence_mas.crewai_fr.agents.analyst_supervisor import AnalystSupervisor
-from due_diligence_mas.crewai_fr.agents.commercial_analyst import CommercialAnalyst_Agent
-from due_diligence_mas.crewai_fr.agents.company_profiler import CompanyProfiler_Agent
-from due_diligence_mas.crewai_fr.agents.team_analyst import TeamAnalyst_Agent
-from due_diligence_mas.crewai_fr.agents.tech_reviewer import TechReviewer_Agent
+from due_diligence_mas.crewai_fr.agents.analysts.analyst_supervisor import AnalystSupervisor
+from due_diligence_mas.crewai_fr.agents.analysts.commercial_analyst import CommercialAnalyst_Agent
+from due_diligence_mas.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
+from due_diligence_mas.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
+from due_diligence_mas.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
 
 class AnalystCrew():  
     """
