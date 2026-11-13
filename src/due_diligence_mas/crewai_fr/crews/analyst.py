@@ -17,10 +17,10 @@ class AnalystCrew():
         - Team Analyst
     """
     
-    def __init__(self, topic: str = "technology", required_agents: list[str] = []):
+    def __init__(self, args = {}, required_agents: list[str] = []):
         
-        self.topic = topic
-        
+        self.topic = args
+    
         self.crew_agents: list[Agent] = []
         self.crew_tasks: list[Task] = []
             

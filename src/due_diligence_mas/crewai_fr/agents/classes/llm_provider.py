@@ -16,9 +16,12 @@ class GroqSafeLLM(LLM):
 
 class LLM_PROVIDER():
     
-    def __init__(self, provider="groq", reasoning="medium", temperature=0.2):
+    def __init__(self, provider="groq", reasoning="", temperature=0.2):
         
         load_dotenv()
+        
+        if reasoning == "": 
+            reasoning = os.getenv("DEFAULT_REASONING_LEVEL", "medium")
 
         self.temperature = temperature
         

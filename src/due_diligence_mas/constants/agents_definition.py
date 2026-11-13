@@ -147,20 +147,23 @@ AGENTS = {
         ),
         "description": (
             "You coordinate the whole due diligence process, from the "
-            "initial input to the final memo. You assign work to the "
+            "initial input to the structured memo. You assign work to the available "
             "specialists, validate that their outputs are complete and "
             "compliant with the expected schema, and keep the flow consistent."
         ),
         "goal": (
             "Due diligence workflow orchestrator responsible for managing the "
             "full analysis process from input to final memo."
+            "The analisys const of more components, each one with a specific agent."
+            "Return a markdown with all information in a structured format, with sections for each analyzed aspect."
+
         ),
         "responsibilities": [
             "normalize the input",
             "identify the required analysis steps",
             "dispatch tasks to specialist agents",
-            "ensure that each agent returns structured output",
-            "detect missing sections or incomplete responses",
+            "ensure that each agent returns proper output",
+            "detect missing sections or incomplete responses and mark as missing",
             "pass the final set of validated outputs to the debate and memo-writing stages",
         ],
         "constraints": [
@@ -169,6 +172,9 @@ AGENTS = {
                 "Ensures each downstream agent works on its own responsibility area "
                 "and does not duplicate the work of others."
             ),
+            "Do not add extra information or analysis beyond what the specialists provide.",
+            "Do not override the outputs of the specialists",
+            "In case of missing information do not invent it or request re-analysis.",
         ],
     },
     "Team Analyst": {
