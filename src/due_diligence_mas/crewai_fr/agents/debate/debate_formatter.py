@@ -34,8 +34,17 @@ class DebateFormatter_Agent(BaseAgent):
     def build_tasks(self, topic: str = "", context: list = []):
         self.tasks = [
             Task(
-                description=f"Format the following analysis preparing a single doument for debate: {topic}",
-                expected_output="A detailed document splitted in sections",
+                description=(
+                    f"Prepare the debate evidence pack from the following complete analysis: {topic}. "
+                    "Condense it into a single structured document: "
+                    "a company snapshot, deduplicated evidence items each with a unique ID, source and confidence level, "
+                    "a clear separation of facts, assumptions and missing data, and the initial tensions within the analysis. "
+                    "Do not add new facts or new analysis."
+                ),
+                expected_output=(
+                    "A structured debate pack with sections: company snapshot, evidence items (ID, statement, source, confidence), "
+                    "facts vs assumptions vs missing data, and initial tensions."
+                ),
                 agent=self.agent,
                 context=context
             )
