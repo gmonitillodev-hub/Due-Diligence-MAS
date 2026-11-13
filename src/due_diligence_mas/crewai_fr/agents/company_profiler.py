@@ -18,7 +18,8 @@ class CompanyProfiler_Agent(BaseAgent):
             llm=LLM_PROVIDER(provider="groq").get_llm(),
             tools=[],
             allow_delegation=False,
-            verbose=True
+            verbose=True,
+            max_retry_limit=2
         )
         
     def get_agent(self):
@@ -27,7 +28,7 @@ class CompanyProfiler_Agent(BaseAgent):
     def build_tasks(self, topic: str = "", context: list = []):
         self.tasks = [
             Task(
-                description=f"Profile the target company in the {topic} sector",
+                description=f"Profile the following target company: {topic}",
                 expected_output="A comprehensive profile of the target company",
                 agent=self.agent,
                 context=context

@@ -83,6 +83,7 @@ class AnalystCrew():
             tasks=self.crew_tasks,
             process=Process.hierarchical,
             manager_agent=self.analyst_supervisor.get_agent(),
+            tracing=True,
             verbose=True
         )
     
@@ -93,7 +94,7 @@ class AnalystCrew():
         if not hasattr(self, 'crew'):
             self.build_crew()
         
-        self.crew.kickoff()       
+        return self.crew.kickoff()       
     
     def print_crew_info(self):
         print("Crew Agents:")
@@ -105,8 +106,12 @@ class AnalystCrew():
             print(f"- {task.description}")
             
 if __name__ == "__main__":
-    crew = AnalystCrew(topic="technology", required_agents=[AgentName.TECH_REVIEWER.value])
+    crew = AnalystCrew(topic="OpenAI", required_agents=[AgentName.TECH_REVIEWER.value])
     crew.print_crew_info()
     
     print("\nRunning the crew...")
-    crew.run_crew()
+    result = crew.run_crew()
+    
+    print("\nCrew Execution Result:")
+    print(f"Tokens Used: {result.token_usage}")
+    print(result)

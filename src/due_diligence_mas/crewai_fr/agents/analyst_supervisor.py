@@ -23,7 +23,8 @@ class AnalystSupervisor(BaseAgent):
             llm=LLM_PROVIDER(provider="groq").get_llm(),
             tools=[],
             allow_delegation=False,
-            verbose=True
+            verbose=True,
+            max_retry_limit=2
         )
         
     def get_agent(self):

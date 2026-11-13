@@ -21,7 +21,8 @@ class TechReviewer_Agent(BaseAgent):
             llm=LLM_PROVIDER(provider="groq").get_llm(),
             tools=[],
             allow_delegation=False,
-            verbose=True
+            verbose=True,
+            max_retry_limit=2
         )
     
     def get_agent(self):
@@ -33,7 +34,7 @@ class TechReviewer_Agent(BaseAgent):
     def build_tasks(self, topic: str = "", context: list = []):
         self.tasks = [
             Task(
-                description=f"Review the technology aspects of the target company in the {topic} sector",
+                description=f"Review the technology aspects of the target company: {topic}",
                 expected_output="A detailed review of the technology aspects of the target company",
                 agent=self.agent,
                 context=context
