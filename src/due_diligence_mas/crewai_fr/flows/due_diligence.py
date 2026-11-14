@@ -3,9 +3,8 @@ from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.crewai_fr.crews.debate import DebateCrew
 from due_diligence_mas.crewai_fr.crews.writer import MemoWriterCrew
-from due_diligence_mas.utils.create_memo_file import generate_memo_file
+from due_diligence_mas.crewai_fr.tools.file_generator import generate_memo_file
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
 from typing import Optional
 
@@ -23,6 +22,7 @@ class DueDiligenceFlow_State(BaseModel):
     
     debate_results: Optional[str] = None  
     final_report: Optional[str] = None
+    final_report_path: Optional[str] = None
 
 class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     
@@ -61,18 +61,16 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             },
             required_agents=[
                     AgentName.TECH_REVIEWER.value, 
-                    AgentName.COMMERCIAL_ANALYST.value
+                    AgentName.COMMERCIAL_ANALYST.value,
+                    AgentName.TEAM_ANALYST.value
                 ]
             )
             
-        result = analyst_crew.run_crew()
-                    
-        # result.raw only holds the last task output: merge all of them
-        self.state.analysis_results = "\n\n".join(
-            f"## {t.agent}\n\n{t.raw}" for t in result.tasks_output if t.raw
-        ) or result.raw
-        self.state.analysis_usage_info = result.token_usage
-        
+        report = analyst_crew.run_crew()
+
+        self.state.analysis_results = report
+        self.state.analysis_usage_info = analyst_crew.crew.token_usage
+
         return self.state.analysis_results
     
     @router(analyze_company)
@@ -81,7 +79,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         print(f"{'='*80}")
         print("\n   Here you can evaluate the analysis before proceeding with automatic debate. ")
         print("\n   Analysis produced: \n")
-        print(f"         {self.state.analysis_results}")
+        print(f"         {self.state.analysis_results.to_markdown()}")
         
         is_approved = True if input(f"\n    Can I proceed with the debate phase (y/n) ? ") == "y" else False
         
@@ -118,7 +116,12 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             }
         )
           
-        self.state.final_report = memo_crew.run_crew()
+        result = memo_crew.run_crew()
+        self.state.final_report = result.raw
+        self.state.final_report_path = str(
+            generate_memo_file(self.state.company_name, self.state.final_report)
+        )
+        print(f"\n Memo saved to: {self.state.final_report_path}")
     
         return self.state.final_report
     

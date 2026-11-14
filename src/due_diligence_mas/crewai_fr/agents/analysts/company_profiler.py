@@ -1,5 +1,6 @@
 from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.crewai_fr.agents import BaseAgent
+from due_diligence_mas.crewai_fr.models import SpecialistReport
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
 from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent
@@ -17,7 +18,7 @@ class CompanyProfiler_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[get_tavily_tool("search"), get_tavily_tool("page_extractor")],
+            tools=[get_tavily_tool("profile_search"), get_tavily_tool("page_extractor")],
             allow_delegation=False,
             verbose=True,
             max_retry_limit=2
@@ -30,8 +31,11 @@ class CompanyProfiler_Agent(BaseAgent):
         self.tasks = [
             Task(
                 description=f"Profile the following target company: {topic}. Extract all possible informations throug websites using also sitemaps to get all relevant pages.",
-                expected_output="A comprehensive profile of the target company",
+                expected_output=(
+                    "Return a SpecialistReport: agent name, a short summary, findings (each with claim, source_url, access_date in YYYY-MM-DD and confidence verified/claimed/tbc) and the list of missing information. Include the official GitHub organization, LinkedIn and team page URLs among the findings when found."
+                ),
                 agent=self.agent,
+                output_pydantic=SpecialistReport,
                 context=context
             )
         ]

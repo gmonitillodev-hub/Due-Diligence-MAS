@@ -5,6 +5,7 @@ from due_diligence_mas.crewai_fr.agents.analysts.commercial_analyst import Comme
 from due_diligence_mas.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
+from due_diligence_mas.crewai_fr.models import AnalysisReport, CompanyInput, SectionStatus, SpecialistReport
 
 class AnalystCrew():  
     """
@@ -19,7 +20,8 @@ class AnalystCrew():
     
     def __init__(self, args = {}, required_agents: list[str] = []):
         
-        self.topic = args
+        self.company = CompanyInput(**args)
+        self.topic = self.company.describe()
     
         self.crew_agents: list[Agent] = []
         self.crew_tasks: list[Task] = []
@@ -72,7 +74,12 @@ class AnalystCrew():
             ta_context = self.profiler.get_tasks()
             self.team_analyst.build_tasks(self.topic, context=ta_context)
             self.crew_tasks.extend(self.team_analyst.get_tasks())
-    
+
+        # Final consolidation, run by the supervisor (manager) on all specialist outputs
+        self.analyst_supervisor.build_tasks(self.topic, context=list(self.crew_tasks))
+        self.crew_tasks.extend(self.analyst_supervisor.get_tasks())
+
+
     def build_crew(self):
         """
             Build the crew with the initialized agents and tasks
@@ -86,6 +93,9 @@ class AnalystCrew():
             tracing=True,
             verbose=True
         )
+
+        for task in self.crew.tasks:
+            task.__dict__["tools"] = []
     
     def run_crew(self):
         """
@@ -94,8 +104,29 @@ class AnalystCrew():
         if not hasattr(self, 'crew'):
             self.build_crew()
         
-        return self.crew.kickoff()       
-    
+        result = self.crew.kickoff()
+        return self._finalize(result)
+
+    def _finalize(self, result):
+        """
+            Return the AnalysisReport, with validation statuses computed deterministically
+            from the specialist outputs rather than self-reported by the LLM.
+        """
+        report: AnalysisReport | None = result.pydantic
+        if report is None:
+            raise ValueError("Supervisor did not return a valid AnalysisReport")
+
+        # A specialist output that does not satisfy the SpecialistReport schema is not parsed
+        report.statuses = []
+        for output in result.tasks_output[:-1]:
+            specialist = output.pydantic if isinstance(output.pydantic, SpecialistReport) else None
+            report.statuses.append(SectionStatus(
+                agent=specialist.agent if specialist else str(output.agent),
+                valid=specialist is not None,
+                issues=[] if specialist else ["Output does not match the SpecialistReport schema."],
+            ))
+        return report
+
     def print_crew_info(self):
         print("Crew Agents:")
         for agent in self.crew_agents:
@@ -106,12 +137,11 @@ class AnalystCrew():
             print(f"- {task.description}")
             
 if __name__ == "__main__":
-    crew = AnalystCrew(topic="OpenAI", required_agents=[AgentName.TECH_REVIEWER.value])
+    crew = AnalystCrew(args={"company_name": "OpenAI"}, required_agents=[AgentName.TECH_REVIEWER.value])
     crew.print_crew_info()
     
     print("\nRunning the crew...")
     result = crew.run_crew()
     
     print("\nCrew Execution Result:")
-    print(f"Tokens Used: {result.token_usage}")
-    print(result)
+    print(result.to_markdown())

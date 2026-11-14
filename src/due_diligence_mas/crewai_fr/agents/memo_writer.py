@@ -3,7 +3,6 @@ from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
-from due_diligence_mas.crewai_fr.tools.file_generator import generate_memo_file
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent
 
 class MemoWriter_Agent(BaseAgent):
@@ -20,7 +19,7 @@ class MemoWriter_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[generate_memo_file],
+            tools=[],
             allow_delegation=False,
             verbose=True,
             max_retry_limit=2
@@ -36,55 +35,54 @@ class MemoWriter_Agent(BaseAgent):
         self.tasks = [
             Task(
                 description=f""" 
-                    Considering the following analysis and debate, create a structured memo. 
-                    Do not add extra informations and use all data from as input.
-                    
-                    After the creation generate the markdown file using available tools.
+                    Write the complete due diligence memo, in English, from the following analysis and debate.
+                    The analysis is the primary source: report it in full and in detail, section by section,
+                    keeping every finding with its source, access date and confidence level.
+                    Do not drop, merge away or generalize findings to save space: the memo has no length limit.
+                    The debate must only be summarized. Do not add information that is not in the input.
                     {topic} 
                 """,
                 expected_output = """
-                    A due diligence memo in Markdown, up to 700 words
-                    excluding sources, using the following structure:
+                    A complete due diligence memo in English, in Markdown, with this structure:
 
                     # Due Diligence Memo — [Company]
-                    Date: [date] | Purpose: [decision being supported]
-                    Scope: [areas reviewed, evidence cutoff date, and exclusions]
+                    Date: [date] | Scope: [areas reviewed, evidence cutoff date, exclusions]
 
                     ## Executive Summary
-                    Summarize the business, material findings, and preliminary conclusion.
+                    Business, material findings and preliminary conclusion (max 250 words).
 
-                    ## Key Findings
-                    Cover business model, ownership and management, market position,
-                    financial performance, technology and operations, and legal or
-                    reputational issues, where relevant and supported by evidence.
-                    State the period and currency for financial figures.
+                    ## Company Profile
+                    ## Product and Technology
+                    ## Commercial Analysis
+                    ## Team and Organization
+                    For each section report ALL the findings of the corresponding analysis, in detail,
+                    with figures, names, dates and periods/currencies, and cite them inline as [1], [2], etc.
+                    Use tables where they preserve information (offering, customers, competitors, team members).
+                    Tag each statement as verified, company claim, estimate or to be confirmed.
+                    Add other sections if the analysis contains topics not covered above.
+
+                    ## Debate Summary
+                    A short synthesis of the PRO case, the CONTRO case and the Judge's conclusion,
+                    or "Debate not performed".
 
                     ## Material Risks
-                    Provide a short table:
-                    Risk | Supporting evidence | Potential impact | Required follow-up
-
-                    Prioritize material risks and explain their significance.
-                    Distinguish allegations from established findings.
+                    Table: Risk | Supporting evidence | Potential impact | Required follow-up
 
                     ## Information Gaps and Limitations
-                    Identify missing or conflicting information, unverified assumptions,
-                    and priority documents or management questions.
+                    Missing or conflicting information, unverified assumptions, priority questions.
 
                     ## Preliminary Conclusion and Next Steps
-                    State whether the evidence supports further evaluation, conditional
-                    progress, or a pause pending verification. Explain the rationale
-                    and any conditions. If evidence is insufficient, say so explicitly.
+                    Whether the evidence supports further evaluation, conditional progress or a pause,
+                    with rationale and conditions. If the evidence is insufficient, say so explicitly.
 
                     ## Sources
-                    List numbered sources with title, URL, and publication date where available.
+                    Numbered list with title, URL and publication/access date.
 
                     Requirements:
-                    - Cite material factual claims inline using [1], [2], etc.
-                    - Distinguish verified facts, company claims, estimates, and analysis.
+                    - Completeness first: every finding of the analysis must appear in the memo.
                     - Never invent facts or references; mark missing data as "Not available".
                     - Do not treat missing evidence as proof that no risk exists.
-                    - Keep findings decision-focused and avoid repetitive background.
-                    - Add extra section if needed based on input analysis.
+                    - Distinguish allegations from established findings.
                 """,
                 agent=self.agent,
                 context=context

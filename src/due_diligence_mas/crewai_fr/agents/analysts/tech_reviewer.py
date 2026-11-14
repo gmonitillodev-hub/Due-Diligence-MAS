@@ -2,6 +2,7 @@ from crewai import Agent, Task, Crew, Process, LLM
 
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
+from due_diligence_mas.crewai_fr.models import SpecialistReport
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
 from due_diligence_mas.crewai_fr.tools.github import github_repos
 from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
@@ -21,7 +22,7 @@ class TechReviewer_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[github_repos, get_tavily_tool("search")],
+            tools=[github_repos, get_tavily_tool("page_extractor")],
             allow_delegation=False,
             verbose=True,
             max_retry_limit=2
@@ -45,8 +46,11 @@ class TechReviewer_Agent(BaseAgent):
                     "Mark as To be confirmed all data fetched from GitHub."
                     "Perform a first match to ensure that all data are related actually to the company"
                 ),
-                expected_output="A detailed review of the technology aspects of the target company",
+                expected_output=(
+                    "Return a SpecialistReport: agent name, a short summary, findings (each with claim, source_url, access_date in YYYY-MM-DD and confidence verified/claimed/tbc) and the list of missing information."
+                ),
                 agent=self.agent,
+                output_pydantic=SpecialistReport,
                 context=context
             )
         ]

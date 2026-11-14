@@ -9,7 +9,7 @@ class DebateFormatter_Agent(BaseAgent):
     
     def __init__(self):
         
-        self.agent_name = AgentName.DEBEATE_FORMATTER.value
+        self.agent_name = AgentName.DEBATE_FORMATTER.value
         
         self.agent_raw = extract_agent(self.agent_name)
         self.backstory = backstory_builder(self.agent_name)
