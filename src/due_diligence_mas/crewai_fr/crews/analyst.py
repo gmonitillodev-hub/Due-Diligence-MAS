@@ -1,8 +1,8 @@
 from crewai import Agent, Task, Crew, Process
+from due_diligence_mas.crewai_fr.utils import is_verbose
 from due_diligence_mas.constants.agents_definition import AgentName
-from due_diligence_mas.crewai_fr.agents.analysts.analyst_supervisor import AnalystSupervisor
 from due_diligence_mas.crewai_fr.agents.analysts.commercial_analyst import CommercialAnalyst_Agent
-from due_diligence_mas.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
+from due_diligence_mas.crewai_fr.agents.memo_writer import MemoWriter_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
 from due_diligence_mas.crewai_fr.models import CompanyInput
@@ -10,8 +10,7 @@ from due_diligence_mas.crewai_fr.models import CompanyInput
 class AnalystCrew():  
     """
         Crew for managing analyst agents.
-        Hierarchical crew: the Analyst Supervisor is the manager, the Company Profiler and
-        the specialists are its workers.
+        Sequential crew: the specialists run first, then the Memo Writer aggregates their reports.
     """
     
     def __init__(self, args = {}, required_agents: list[str] = []):
@@ -29,13 +28,11 @@ class AnalystCrew():
         """ 
             Initialize crew agents
         """
-        
-        self.analyst_supervisor = AnalystSupervisor()
-        
-        # Profiler is a mandatory agent, so we always initialize it
-        self.profiler = CompanyProfiler_Agent()
-        self.crew_agents.append(self.profiler.get_agent())
-        
+                        
+        # Memo writer is the aggregator, so it is always initialized and runs last
+        self.memo_writer = MemoWriter_Agent()
+        self.crew_agents.append(self.memo_writer.get_agent())
+
         if AgentName.TECH_REVIEWER.value in required_agents or len(required_agents) == 0:
             self.tech_reviewer = TechReviewer_Agent()
             self.crew_agents.append(self.tech_reviewer.get_agent())
@@ -52,27 +49,24 @@ class AnalystCrew():
         """ 
             Build tasks for each agent based on the topic and context
         """
-        self.profiler.build_tasks(self.topic)
-        self.crew_tasks.extend(self.profiler.get_tasks())
+
         
         if hasattr(self, 'tech_reviewer'):        
-            tr_context = self.profiler.get_tasks()
-            self.tech_reviewer.build_tasks(self.topic, context=tr_context)
+            self.tech_reviewer.build_tasks(self.company.topic_for("tech"))
             self.crew_tasks.extend(self.tech_reviewer.get_tasks())
          
         if hasattr(self, 'commercial_analyst'):       
-            ca_context = self.profiler.get_tasks() 
-            self.commercial_analyst.build_tasks(self.topic, context=ca_context)
+            self.commercial_analyst.build_tasks(self.company.topic_for("commercial"))
             self.crew_tasks.extend(self.commercial_analyst.get_tasks())
         
         if hasattr(self, 'team_analyst'):       
-            ta_context = self.profiler.get_tasks()
-            self.team_analyst.build_tasks(self.topic, context=ta_context)
+            self.team_analyst.build_tasks(self.company.topic_for("team"))
             self.crew_tasks.extend(self.team_analyst.get_tasks())
 
-        # Final consolidation, run by the supervisor (manager) on all outputs
-        self.analyst_supervisor.build_tasks(self.topic, context=list(self.crew_tasks))
-        self.crew_tasks.extend(self.analyst_supervisor.get_tasks())
+        # Aggregation, run by the memo writer on all the specialists' outputs
+        specialist_tasks = list(self.crew_tasks)
+        self.memo_writer.build_aggregation_tasks(self.company.profile_topic(), context=specialist_tasks)
+        self.crew_tasks.extend(self.memo_writer.get_tasks())
     
     def build_crew(self):
         """
@@ -82,18 +76,10 @@ class AnalystCrew():
             name="Analyst Crew",
             agents=self.crew_agents,
             tasks=self.crew_tasks,
-            process=Process.hierarchical,
-            manager_agent=self.analyst_supervisor.get_agent(),
+            process=Process.sequential,
             tracing=True,
-            verbose=True
+            verbose=is_verbose("crew")
         )
-
-        # Task.check_tools copies the assigned agent's tools into task.tools, and in a
-        # hierarchical crew the manager runs every task: clear them so the manager can
-        # only delegate, while each specialist keeps its own tools when it executes.
-        # __dict__ bypasses the validator, which would copy the tools back.
-        for task in self.crew.tasks:
-            task.__dict__["tools"] = []
     
     def run_crew(self) -> str:
         """
@@ -109,9 +95,4 @@ class AnalystCrew():
         for agent in self.crew_agents:
             print(f"- {agent.role}")
             
-if __name__ == "__main__":
-    crew = AnalystCrew(args={"company_name": "OpenAI"}, required_agents=[AgentName.TECH_REVIEWER.value])
-    crew.print_crew_info()
-    
-    print("\nRunning the crew...")
-    print(crew.run_crew())
+

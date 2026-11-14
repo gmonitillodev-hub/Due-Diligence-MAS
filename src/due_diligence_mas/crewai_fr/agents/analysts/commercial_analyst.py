@@ -4,7 +4,7 @@ from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
 from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
-from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits
+from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits, is_verbose
 
 class CommercialAnalyst_Agent(BaseAgent):
     
@@ -22,7 +22,7 @@ class CommercialAnalyst_Agent(BaseAgent):
             llm=LLM_PROVIDER().get_llm(),
             tools=[get_tavily_tool("search"), get_tavily_tool("funding_search"), get_tavily_tool("page_extractor")],
             allow_delegation=False,
-            verbose=True,
+            verbose=is_verbose("agent"),
             max_retry_limit=2,
             **agent_limits(self.agent_name)
         )

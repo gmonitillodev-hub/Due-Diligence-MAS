@@ -6,6 +6,7 @@ from due_diligence_mas.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.crewai_fr.tools.file_generator import generate_memo_file
 from due_diligence_mas.crewai_fr.models.analysis import CompanyProfile
+from due_diligence_mas.crewai_fr.utils import is_verbose
 from pydantic import BaseModel
 
 from typing import Optional
@@ -74,7 +75,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         
         return profile
         
-    #@listen(profile_company)
+    @listen(profile_company)
     def analyze_company(self):
         """
         Analyze the target company.
@@ -101,7 +102,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         report = analyst_crew.run_crew()
 
         self.state.analysis_results = report
-        self.state.analysis_usage_info = analyst_crew.crew.token_usage
+        self.state.analysis_usage_info = str(analyst_crew.crew.token_usage)
 
         return self.state.analysis_results
     
@@ -111,7 +112,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         print(f"{'='*80}")
         print("\n   Here you can evaluate the analysis before proceeding with automatic debate. ")
         print("\n   Analysis produced: \n")
-        print(f"         {self.state.analysis_results.to_markdown()}")
+        print(f"         {self.state.analysis_results}")
         
         is_approved = True if input(f"\n    Can I proceed with the debate phase (y/n) ? ") == "y" else False
         
@@ -158,6 +159,6 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         return self.state.final_report
     
 if __name__ == "__main__":
-    flow = DueDiligenceFlow(tracing=True)
+    flow = DueDiligenceFlow(tracing=True, suppress_flow_events=not is_verbose("flow"))
     flow.kickoff()
 

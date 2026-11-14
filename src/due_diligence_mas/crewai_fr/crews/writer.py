@@ -1,4 +1,5 @@
 from crewai import Agent, Task, Crew, Process
+from due_diligence_mas.crewai_fr.utils import is_verbose
 from due_diligence_mas.crewai_fr.agents.memo_writer import MemoWriter_Agent
 
 class MemoWriterCrew():  
@@ -45,7 +46,7 @@ class MemoWriterCrew():
             tasks=self.crew_tasks,
             process=Process.sequential,
             tracing=True,
-            verbose=True
+            verbose=is_verbose("crew")
         )
     
     def run_crew(self):

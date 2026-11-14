@@ -2,8 +2,9 @@ from crewai import Agent, Task, Crew, Process, LLM
 
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
+from due_diligence_mas.crewai_fr.tools.request_handler import get_current_context
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
-from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits
+from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits, is_verbose
 
 class MemoWriter_Agent(BaseAgent):
     
@@ -19,9 +20,9 @@ class MemoWriter_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[],
+            tools=[get_current_context],
             allow_delegation=False,
-            verbose=True,
+            verbose=is_verbose("agent"),
             max_retry_limit=2,
             **agent_limits(self.agent_name)
         )
@@ -32,11 +33,40 @@ class MemoWriter_Agent(BaseAgent):
     def get_tasks(self):
         return self.tasks
 
+    def build_aggregation_tasks(self, topic: str = "", context: list = []):
+        """Aggregation of the specialists' outputs into a single analysis, to be used as input of the memo task."""
+        self.tasks = [
+            Task(
+                description=f"""
+                    Aggregate the reports produced by the specialists (technology, commercial, team) in the context
+                    into one consolidated analysis, in English.
+                    Keep every finding unchanged, with its source, access date and confidence level: do not drop,
+                    summarize or generalize anything. Do not add information that is not in the context.
+                    Where specialists report conflicting information, keep both versions and state the conflict.
+                    {topic}
+                """,
+                expected_output="""
+                    A Markdown analysis report with one section per specialist (Product and Technology,
+                    Commercial Analysis, Team and Organization), each containing all of that specialist's findings,
+                    followed by:
+                    ## Resolved and Unresolved Conflicts
+                    ## Missing Information
+                    ## Sources
+                    Numbered list of all the sources cited by the specialists.
+                """,
+                agent=self.agent,
+                context=context
+            )
+        ]
+
     def build_tasks(self, topic: str = "", context: list = []):
         self.tasks = [
             Task(
                 description=f""" 
-                    Write the complete due diligence memo, in English, from the following analysis and debate.
+                    Write the complete due diligence memo from the following analysis and debate.
+                    First call the current context tool to get the user's country, and write the memo in that
+                    country's main language (translate the analysis and debate). If the country is unknown, write in English.
+                    Translate the text only: keep names, figures, dates, URLs and source titles unchanged.
                     The analysis is the primary source: report it in full and in detail, section by section,
                     keeping every finding with its source, access date and confidence level.
                     Do not drop, merge away or generalize findings to save space: the memo has no length limit.
@@ -44,7 +74,8 @@ class MemoWriter_Agent(BaseAgent):
                     {topic} 
                 """,
                 expected_output = """
-                    A complete due diligence memo in English, in Markdown, with this structure:
+                    A complete due diligence memo, in the language of the user's country (English if unknown), in Markdown, with this structure
+                    (translate the section titles into that language):
 
                     # Due Diligence Memo — [Company]
                     Date: [date] | Scope: [areas reviewed, evidence cutoff date, exclusions]
