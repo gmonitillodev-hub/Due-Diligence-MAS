@@ -2,8 +2,10 @@ from crewai.flow.flow import Flow, start, listen, router, or_
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.crewai_fr.crews.debate import DebateCrew
+from due_diligence_mas.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.utils.create_memo_file import generate_memo_file
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 from typing import Optional
 
@@ -65,7 +67,10 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             
         result = analyst_crew.run_crew()
                     
-        self.state.analysis_results = result.raw
+        # result.raw only holds the last task output: merge all of them
+        self.state.analysis_results = "\n\n".join(
+            f"## {t.agent}\n\n{t.raw}" for t in result.tasks_output if t.raw
+        ) or result.raw
         self.state.analysis_usage_info = result.token_usage
         
         return self.state.analysis_results
@@ -106,15 +111,18 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         if not self.state.analysis_results:
             raise ValueError("Analysis not produced")
         
-        # CALL MEMO WRITER
-        
-        self.state.final_report = self.state.analysis_results
-        
-        report_path = generate_memo_file(self.state)
-        print(f" Report saved to: {report_path}")
+        memo_crew = MemoWriterCrew(
+            args={
+                    "analysis": self.state.analysis_results,
+                    "debate": self.state.debate_results if self.state.debate_results else "Debate not performed"
+            }
+        )
+          
+        self.state.final_report = memo_crew.run_crew()
     
-        return report_path
+        return self.state.final_report
     
 if __name__ == "__main__":
     flow = DueDiligenceFlow(tracing=True)
     flow.kickoff()
+

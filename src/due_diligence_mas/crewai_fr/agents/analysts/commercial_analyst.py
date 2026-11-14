@@ -3,6 +3,7 @@ from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
+from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent
 
 class CommercialAnalyst_Agent(BaseAgent):
@@ -19,7 +20,7 @@ class CommercialAnalyst_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[],
+            tools=[get_tavily_tool("search")],
             allow_delegation=False,
             verbose=True,
             max_retry_limit=2

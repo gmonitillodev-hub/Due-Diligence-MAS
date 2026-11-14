@@ -3,6 +3,8 @@ from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
+from due_diligence_mas.crewai_fr.tools.github import github_repos
+from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent
 
 class TechReviewer_Agent(BaseAgent):
@@ -19,7 +21,7 @@ class TechReviewer_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[],
+            tools=[github_repos, get_tavily_tool("search")],
             allow_delegation=False,
             verbose=True,
             max_retry_limit=2
@@ -34,7 +36,15 @@ class TechReviewer_Agent(BaseAgent):
     def build_tasks(self, topic: str = "", context: list = []):
         self.tasks = [
             Task(
-                description=f"Review the technology aspects of the target company: {topic}",
+                description=(
+                    f"Review the technology aspects of the target company: {topic}. "
+                    "If the company has an official public GitHub organization (linked from its "
+                    "website or docs), use the GitHub repositories tool with that owner to gather "
+                    "open-source evidence. Do not guess organizations: if none is "
+                    "confirmed, report GitHub signals as unavailable."
+                    "Mark as To be confirmed all data fetched from GitHub."
+                    "Perform a first match to ensure that all data are related actually to the company"
+                ),
                 expected_output="A detailed review of the technology aspects of the target company",
                 agent=self.agent,
                 context=context

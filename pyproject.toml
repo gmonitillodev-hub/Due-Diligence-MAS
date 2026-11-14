@@ -9,7 +9,10 @@ readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "crewai[litellm] (>=1.15.40,<2.0.0)",
-    "pydantic (>=2.11.9,<2.13)"
+    "pydantic (>=2.11.9,<2.13)",
+    "crewai-tools (>=1.15.41,<2.0.0)",
+    "tavily-python (>=0.8.5,<0.9.0)",
+    "python-dotenv (>=1.2.4,<2.0.0)"
 ]
 
 [tool.poetry]

@@ -1,6 +1,7 @@
 from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.crewai_fr.agents import BaseAgent
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
+from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent
 from due_diligence_mas.constants.agents_definition import AgentName
 
@@ -16,7 +17,7 @@ class CompanyProfiler_Agent(BaseAgent):
             goal=self.agent_raw["goal"],
             backstory=self.backstory,
             llm=LLM_PROVIDER().get_llm(),
-            tools=[],
+            tools=[get_tavily_tool("search"), get_tavily_tool("page_extractor")],
             allow_delegation=False,
             verbose=True,
             max_retry_limit=2
@@ -28,7 +29,7 @@ class CompanyProfiler_Agent(BaseAgent):
     def build_tasks(self, topic: str = "", context: list = []):
         self.tasks = [
             Task(
-                description=f"Profile the following target company: {topic}",
+                description=f"Profile the following target company: {topic}. Extract all possible informations throug websites using also sitemaps to get all relevant pages.",
                 expected_output="A comprehensive profile of the target company",
                 agent=self.agent,
                 context=context

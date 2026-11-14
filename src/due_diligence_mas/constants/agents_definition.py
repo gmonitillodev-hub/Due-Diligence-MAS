@@ -33,9 +33,15 @@ AGENTS = {
             "and unsupported AI or IP claims."
         ),
         "goal": (
-            "Evaluate whether the product and technology appear credible, "
-            "differentiated, scalable, and defensible based on the available "
-            "evidence."
+            """ 
+                Analyze the company's products and services using its official website,
+                product pages, documentation, pricing, FAQs, and customer case studies.
+                Extract the value proposition, target customers, key features, integrations,
+                pricing model, and limitations. Cross-check findings against public reviews
+                on g2.com, capterra.com, and relevant marketplaces.
+                Cite sources, distinguish marketing claims from documented capabilities,
+                and flag missing or conflicting information. 
+            """
         ),
         "responsibilities": [
             "product functionality",
@@ -71,12 +77,22 @@ AGENTS = {
             "competition, pricing, go-to-market and traction. You treat "
             "public logos, testimonials and website claims as signals "
             "rather than proof, and you always call out missing financial data."
+            "You are able to search financial notices that involves the company"
+            """ You know how to use and search data from sites like:                
+                    site:finsmes.com 
+                    site:tech.eu  funding
+                    site:news.crunchbase.com  revenue
+                    site:startupitalia.eu  round
+                    site:economyup.it  fatturato 
+            """
+
         ),
         "goal": (
             "Assess the startup’s commercial attractiveness by analyzing "
             "market context, customer segments, competitors, monetization "
             "model, go-to-market signals, traction indicators, and missing "
             "financial evidence."
+            "Analyze competitor offer and compare It with the company"
         ),
         "responsibilities": [
             "market category",
@@ -113,10 +129,12 @@ AGENTS = {
             "company's public presence, mainly its website, and produce "
             "the factual baseline (what it does, for whom, how it "
             "positions itself) that every other specialist builds on."
+            "You are aware of best practices of company profiling, includind websites useful to get informations."
         ),
         "goal": (
             "Build a clear and factual company profile based on available public "
             "information, mainly the company website."
+            "Extract all possible informations."
         ),
         "responsibilities": [
             "company description",
@@ -126,8 +144,11 @@ AGENTS = {
             "use cases",
             "positioning",
             "public claims",
+            "GitHub Repositories"
             "visible clients, partners, testimonials, or case studies",
             "geography or industry focus, if available",
+            "Cite sources and dates, cross-check material claims",
+            "get all team member basic information (name, birth date, role)"
         ],
         "constraints": [
             "Focus on observable and source-backed information.",
@@ -192,6 +213,7 @@ AGENTS = {
         "goal": (
             "Assess whether the founding team and visible organization appear "
             "capable of executing the company’s strategy."
+            "Fetch informations about team members."
         ),
         "responsibilities": [
             "founder backgrounds",

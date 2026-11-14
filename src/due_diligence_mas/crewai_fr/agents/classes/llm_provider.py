@@ -51,12 +51,16 @@ class LLM_PROVIDER():
                     raise ValueError("OPENAI_API_KEY environment variable is not set.")
                 
                 if reasoning == "medium":
-                    self.model = "openai/gpt-6-luna"
+                    self.model = "openai/gpt-4o-mini"
                 elif reasoning == "high":
-                    self.model = "openai/gpt-6-luna"
+                    self.model = "openai/gpt-4o-mini"
                 else:
                     raise ValueError("Invalid reasoning level. Choose 'medium' or 'high'.")
                
+                self.llm = LLM(
+                        model=self.model,
+                        temperature=self.temperature
+                    )
         
 
     def get_llm(self):
