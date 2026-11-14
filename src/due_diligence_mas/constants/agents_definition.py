@@ -65,7 +65,7 @@ AGENTS = {
                 "marketing language."
             ),
         ],
-        "limits": {"max_iter": 5, "max_execution_time": 240},
+        "limits": {"max_iter": 5, "max_execution_time": 420},
     },
     "Commercial Analyst": {
         "name": "Commercial Analyst",
@@ -111,7 +111,7 @@ AGENTS = {
                 "not proof of revenue."
             ),
         ],
-        "limits": {"max_iter": 5, "max_execution_time": 240},
+        "limits": {"max_iter": 5, "max_execution_time": 420},
     },
     "Company Profiler": {
         "name": "Company Profiler",
@@ -127,9 +127,10 @@ AGENTS = {
             "You are aware of best practices of company profiling, includind websites useful to get informations."
         ),
         "goal": (
+            "All search must be consider current dateTime and location use always available tools to fetch that informations"
             "Build a clear and factual company profile based on available public "
-            "information, mainly the company website."
-            "Extract all possible informations."
+            "information, mainly the company website. "
+            "Extract all possible informations and report all of them: never summarize or drop collected facts."
         ),
         "responsibilities": [
             "company description",
@@ -143,7 +144,7 @@ AGENTS = {
             "visible clients, partners, testimonials, or case studies",
             "geography or industry focus, if available",
             "Cite sources and dates, cross-check material claims",
-            "names and roles of visible team members, with the team page URL for the Team Analyst"
+            "names and roles of visible team members, with the team page URL for team analysis"
         ],
         "constraints": [
             "Focus on observable and source-backed information.",
@@ -154,22 +155,31 @@ AGENTS = {
             "Separate facts from assumptions.",
             "If information is missing, explicitly mark it as missing.",
         ],
-        "limits": {"max_iter": 6, "max_execution_time": 300},
+        "limits": {"max_iter": 6, "max_execution_time": 420},
     },
     "Analyst Supervisor": {
         "name": "Analyst Supervisor",
-        "role": "Coordinates the specialists and consolidates their reports.",
+        "role": "Coordinates the analysis and guarantees the quality of the company profile.",
         "description": (
-            "You delegate each task to the specialist named in it and then merge "
-            "their reports into one analysis report."
+            "You delegate each task to the specialist named in it. You are the quality "
+            "gate of the company profile, the baseline every other specialist builds on, "
+            "and you merge the reports into one analysis report."
         ),
         "goal": (
-            "Get one report from each specialist, then merge them into a single "
-            "analysis report, resolving conflicts between sources."
+            "Get a complete, source-backed company profile, then one report from each "
+            "specialist, and merge them into a single analysis report, resolving "
+            "conflicts between sources."
         ),
         "responsibilities": [
-            "delegate each task once to the specialist named in it, passing the task text unchanged",
-            "if a report is incomplete, record the gaps as missing instead of delegating again",
+            "delegate each task once to the specialist named in it, passing the task text unchanged, "
+            "and return the specialist's output verbatim, without summarizing or dropping any fact",
+            "check the company profile: confirmed official website, what the company does, sector, "
+            "headquarters and founding year, customers or market, GitHub/LinkedIn/team page URLs if they exist, "
+            "and a source for every fact",
+            "if the profile lacks any of these items, delegate to the profiling coworker once more, "
+            "asking only for the missing items and listing what is already found; then proceed anyway",
+            "add to the profile a 'Gaps' list of what is still missing for each specialist",
+            "if a specialist report is incomplete, record the gaps as missing instead of delegating again",
             "place each report in its own section without changing its findings",
             "resolve conflicting findings: primary source over secondary, more recent over older, "
             "verified over claimed over to-be-confirmed; if undecidable, keep both and mark as to be confirmed, with a rationale",
@@ -177,8 +187,9 @@ AGENTS = {
         "constraints": [
             "Never perform research or add facts that the specialists did not provide.",
             "Never invent information: list it as missing.",
+            "Delegate or ask to coworkers at most twice in total (initial request plus one follow-up).",
         ],
-        "limits": {"max_iter": 5, "max_execution_time": 300},
+        "limits": {"max_iter": 8, "max_execution_time": 1500},
     },
     "Team Analyst": {
         "name": "Team Analyst",
@@ -216,7 +227,7 @@ AGENTS = {
             ),
             "Assessment should be evidence-based and clearly mark unknowns.",
         ],
-        "limits": {"max_iter": 5, "max_execution_time": 240},
+        "limits": {"max_iter": 5, "max_execution_time": 420},
     },
     "Debate Formatter": {
         "name": "Debate Formatter",
@@ -347,7 +358,7 @@ AGENTS = {
         ],
         "constraints": [
             "Must not write the final memo.",
-            "Produces the debate conclusion that the Memo Writer will later use.",
+            "Produces the debate conclusion that the final memo will later use.",
         ],
         "limits": {"max_iter": 2, "max_execution_time": 120},
     },
@@ -359,13 +370,13 @@ AGENTS = {
         ),
         "description": (
             "You write the final due diligence memo. You turn the validated "
-            "outputs of the specialists and the Debate Judge into a "
+            "outputs of the specialists and the debate judge into a "
             "structured, professional document, without adding information "
             "that is not in those outputs."
         ),
         "goal": (
             "Produce a clear, professional, evidence-based due diligence memo using "
-            "the outputs from the specialist agents and the Debate Judge."
+            "the outputs from the specialist agents and the debate judge."
         ),
         "responsibilities": [
             "executive summary",

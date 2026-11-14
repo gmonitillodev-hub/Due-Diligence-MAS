@@ -2,8 +2,10 @@ from crewai.flow.flow import Flow, start, listen, router, or_
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.crewai_fr.crews.debate import DebateCrew
+from due_diligence_mas.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.crewai_fr.tools.file_generator import generate_memo_file
+from due_diligence_mas.crewai_fr.models.analysis import CompanyProfile
 from pydantic import BaseModel
 
 from typing import Optional
@@ -14,6 +16,9 @@ class DueDiligenceFlow_State(BaseModel):
     company_name: Optional[str] = None
     company_site: Optional[str] = None
     company_sector: Optional[str] = None
+    
+    # Profiling output
+    profile: Optional[CompanyProfile] = None
     
     # Results of the analysis and debate
     analysis_results: Optional[str] = None
@@ -45,8 +50,31 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         self.state.company_sector = input("Enter the target company sector (optional): ")
         
         return True 
-        
+    
     @listen(initialize_flow)
+    def profile_company(self):
+        """ 
+            Profile the target company.
+        """
+        
+        print(f"\n  Profiling the target company: {self.state.company_name}...\n")
+                
+        analyst_crew = ProfilerCrew(
+            args={
+                "company_name": self.state.company_name,
+                "company_site": self.state.company_site,
+                "company_sector": self.state.company_sector
+            }
+        )
+                    
+        report = analyst_crew.run_crew()
+        profile = report.pydantic
+        print(f"Report > {profile.model_dump_json(indent=2) if profile else report.raw}")
+        self.state.profile = profile
+        
+        return profile
+        
+    #@listen(profile_company)
     def analyze_company(self):
         """
         Analyze the target company.
@@ -57,7 +85,11 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             args={
                 "company_name": self.state.company_name,
                 "company_site": self.state.company_site,
-                "company_sector": self.state.company_sector
+                "company_sector": self.state.company_sector,
+                "general_info": self.state.profile.generic,
+                "tech_specs": self.state.profile.tech,
+                "commercial_specs": self.state.profile.commercial,
+                "team_specs": self.state.profile.team
             },
             required_agents=[
                     AgentName.TECH_REVIEWER.value, 

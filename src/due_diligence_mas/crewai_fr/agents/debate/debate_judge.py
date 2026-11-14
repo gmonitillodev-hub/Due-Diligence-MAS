@@ -44,7 +44,7 @@ class DebateJudge_Agent(BaseAgent):
                 ),
                 expected_output=(
                     "A balanced preliminary judgement (SWOT analysis): evidence-quality assessment of both sides, central tension, "
-                    "risk classification, and a recommendation on further diligence, for the Memo Writer to use."
+                    "risk classification, and a recommendation on further diligence, for the final memo to use."
                 ),
                 agent=self.agent,
                 context=context
