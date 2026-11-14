@@ -3,7 +3,7 @@ from crewai import Agent, Task, Crew, Process, LLM
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents import BaseAgent
 from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
-from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent
+from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits
 
 class RiskAnalyst_Agent(BaseAgent):
     
@@ -22,7 +22,8 @@ class RiskAnalyst_Agent(BaseAgent):
             tools=[],
             allow_delegation=False,
             verbose=True,
-            max_retry_limit=2
+            max_retry_limit=2,
+            **agent_limits(self.agent_name)
         )
     
     def get_agent(self):

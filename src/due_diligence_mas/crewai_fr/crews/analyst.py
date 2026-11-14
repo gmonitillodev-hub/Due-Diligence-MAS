@@ -1,21 +1,18 @@
-from crewai import Agent, Task, Crew, Process, LLM
+from crewai import Agent, Task, Crew, Process
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents.analysts.analyst_supervisor import AnalystSupervisor
 from due_diligence_mas.crewai_fr.agents.analysts.commercial_analyst import CommercialAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
-from due_diligence_mas.crewai_fr.models import AnalysisReport, CompanyInput, SectionStatus, SpecialistReport
+from due_diligence_mas.crewai_fr.models import CompanyInput
 
 class AnalystCrew():  
     """
         Crew for managing analyst agents.
-        Required agents:
-        - Analyst Supervisor
-        - Company Profiler
-        - Tech Reviewer
-        - Commercial Analyst
-        - Team Analyst
+        The Company Profiler runs first; its report is written into the specialists' task
+        text, because in a hierarchical crew the manager would not forward it reliably as
+        context. Specialists then run under the Analyst Supervisor (manager).
     """
     
     def __init__(self, args = {}, required_agents: list[str] = []):
@@ -23,11 +20,8 @@ class AnalystCrew():
         self.company = CompanyInput(**args)
         self.topic = self.company.describe()
     
-        self.crew_agents: list[Agent] = []
-        self.crew_tasks: list[Task] = []
-            
-        self._initialize_agents(required_agents)    
-        self._build_tasks()
+        self.specialists: list = []
+        self._initialize_agents(required_agents)
 
     def _initialize_agents(self, required_agents: list[str]):
         """ 
@@ -38,55 +32,53 @@ class AnalystCrew():
         
         # Profiler is a mandatory agent, so we always initialize it
         self.profiler = CompanyProfiler_Agent()
-        self.crew_agents.append(self.profiler.get_agent())
         
         if AgentName.TECH_REVIEWER.value in required_agents or len(required_agents) == 0:
-            self.tech_reviewer = TechReviewer_Agent()
-            self.crew_agents.append(self.tech_reviewer.get_agent())
+            self.specialists.append(TechReviewer_Agent())
 
         if AgentName.COMMERCIAL_ANALYST.value in required_agents or len(required_agents) == 0:        
-            self.commercial_analyst = CommercialAnalyst_Agent()
-            self.crew_agents.append(self.commercial_analyst.get_agent())
+            self.specialists.append(CommercialAnalyst_Agent())
          
         if AgentName.TEAM_ANALYST.value in required_agents or len(required_agents) == 0:
-            self.team_analyst = TeamAnalyst_Agent()
-            self.crew_agents.append(self.team_analyst.get_agent())      
+            self.specialists.append(TeamAnalyst_Agent())
 
-    def _build_tasks(self):
-        """ 
-            Build tasks for each agent based on the topic and context
-        """
-        
+    def _run_profiler(self) -> str:
         self.profiler.build_tasks(self.topic)
-        self.crew_tasks.extend(self.profiler.get_tasks())
-        
-        if hasattr(self, 'tech_reviewer'):        
-            tr_context = self.profiler.get_tasks()
-            self.tech_reviewer.build_tasks(self.topic, context=tr_context)
-            self.crew_tasks.extend(self.tech_reviewer.get_tasks())
-         
-        if hasattr(self, 'commercial_analyst'):       
-            ca_context = self.profiler.get_tasks() 
-            self.commercial_analyst.build_tasks(self.topic, context=ca_context)
-            self.crew_tasks.extend(self.commercial_analyst.get_tasks())
-        
-        if hasattr(self, 'team_analyst'):       
-            ta_context = self.profiler.get_tasks()
-            self.team_analyst.build_tasks(self.topic, context=ta_context)
-            self.crew_tasks.extend(self.team_analyst.get_tasks())
+        profile_crew = Crew(
+            name="Company Profiler Crew",
+            agents=[self.profiler.get_agent()],
+            tasks=self.profiler.get_tasks(),
+            process=Process.sequential,
+            tracing=True,
+            verbose=True
+        )
+        return profile_crew.kickoff().raw
 
-        # Final consolidation, run by the supervisor (manager) on all specialist outputs
-        self.analyst_supervisor.build_tasks(self.topic, context=list(self.crew_tasks))
+    def _build_tasks(self, profile: str):
+        """ 
+            Build specialists' tasks with the profile embedded in their text
+        """
+        topic_with_profile = (
+            f"{self.topic}\n\nCompany profile produced by the Company Profiler "
+            f"(use it as your starting point):\n{profile}"
+        )
+        
+        self.crew_tasks: list[Task] = []
+        for specialist in self.specialists:
+            specialist.build_tasks(topic_with_profile)
+            self.crew_tasks.extend(specialist.get_tasks())
+
+        self.analyst_supervisor.build_tasks(topic_with_profile, context=list(self.crew_tasks))
         self.crew_tasks.extend(self.analyst_supervisor.get_tasks())
-
-
-    def build_crew(self):
+    
+    def build_crew(self, profile: str):
         """
-            Build the crew with the initialized agents and tasks
+            Build the hierarchical crew with the specialists and the consolidation task
         """
+        self._build_tasks(profile)
         self.crew = Crew(
             name="Analyst Crew",
-            agents=self.crew_agents,
+            agents=[s.get_agent() for s in self.specialists],
             tasks=self.crew_tasks,
             process=Process.hierarchical,
             manager_agent=self.analyst_supervisor.get_agent(),
@@ -94,54 +86,32 @@ class AnalystCrew():
             verbose=True
         )
 
+        # Task.check_tools copies the assigned agent's tools into task.tools, and in a
+        # hierarchical crew the manager runs every task: clear them so the manager can
+        # only delegate, while each specialist keeps its own tools when it executes.
+        # __dict__ bypasses the validator, which would copy the tools back.
         for task in self.crew.tasks:
             task.__dict__["tools"] = []
     
-    def run_crew(self):
+    def run_crew(self) -> str:
         """
-            Run the crew to execute the tasks
+            Run the profiler, then the specialists under the supervisor.
+            Returns the consolidated analysis in markdown.
         """
-        if not hasattr(self, 'crew'):
-            self.build_crew()
-        
+        profile = self._run_profiler()
+        self.build_crew(profile)
         result = self.crew.kickoff()
-        return self._finalize(result)
 
-    def _finalize(self, result):
-        """
-            Return the AnalysisReport, with validation statuses computed deterministically
-            from the specialist outputs rather than self-reported by the LLM.
-        """
-        report: AnalysisReport | None = result.pydantic
-        if report is None:
-            raise ValueError("Supervisor did not return a valid AnalysisReport")
-
-        # A specialist output that does not satisfy the SpecialistReport schema is not parsed
-        report.statuses = []
-        for output in result.tasks_output[:-1]:
-            specialist = output.pydantic if isinstance(output.pydantic, SpecialistReport) else None
-            report.statuses.append(SectionStatus(
-                agent=specialist.agent if specialist else str(output.agent),
-                valid=specialist is not None,
-                issues=[] if specialist else ["Output does not match the SpecialistReport schema."],
-            ))
-        return report
-
+        return f"## Company Profile\n\n{profile}\n\n{result.raw}"
+    
     def print_crew_info(self):
         print("Crew Agents:")
-        for agent in self.crew_agents:
-            print(f"- {agent.role}")
-        
-        print("\nCrew Tasks:")
-        for task in self.crew_tasks:
-            print(f"- {task.description}")
+        for agent in [self.profiler] + self.specialists:
+            print(f"- {agent.get_agent().role}")
             
 if __name__ == "__main__":
     crew = AnalystCrew(args={"company_name": "OpenAI"}, required_agents=[AgentName.TECH_REVIEWER.value])
     crew.print_crew_info()
     
     print("\nRunning the crew...")
-    result = crew.run_crew()
-    
-    print("\nCrew Execution Result:")
-    print(result.to_markdown())
+    print(crew.run_crew())

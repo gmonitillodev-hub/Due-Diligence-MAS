@@ -15,3 +15,8 @@ def extract_agent(agent_name: str) -> dict:
         raise KeyError(f"Unknown agent '{agent_name}'. Available: {', '.join(AGENTS)}")
     
     return AGENTS[agent_name]
+
+
+def agent_limits(agent_name: str) -> dict:
+    """Inference limits (max_iter, max_execution_time) to pass to the Agent constructor."""
+    return dict(extract_agent(agent_name).get("limits", {}))

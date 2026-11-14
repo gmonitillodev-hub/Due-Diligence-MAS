@@ -65,6 +65,7 @@ AGENTS = {
                 "marketing language."
             ),
         ],
+        "limits": {"max_iter": 5, "max_execution_time": 240},
     },
     "Commercial Analyst": {
         "name": "Commercial Analyst",
@@ -110,6 +111,7 @@ AGENTS = {
                 "not proof of revenue."
             ),
         ],
+        "limits": {"max_iter": 5, "max_execution_time": 240},
     },
     "Company Profiler": {
         "name": "Company Profiler",
@@ -152,50 +154,31 @@ AGENTS = {
             "Separate facts from assumptions.",
             "If information is missing, explicitly mark it as missing.",
         ],
+        "limits": {"max_iter": 6, "max_execution_time": 300},
     },
     "Analyst Supervisor": {
         "name": "Analyst Supervisor",
-        "role": (
-            "Coordinator and quality gate of the analyst crew: delegates work to "
-            "the specialists, checks their outputs and consolidates them."
-        ),
+        "role": "Coordinates the specialists and consolidates their reports.",
         "description": (
-            "You coordinate the analysis phase of the due diligence. You delegate "
-            "each task to the specialist who owns that area, check that the "
-            "returned outputs are complete, source-backed and within the "
-            "specialist's area, and consolidate them into a single report. "
-            "When specialists disagree you decide which finding prevails, "
-            "using explicit criteria and recording your rationale."
+            "You delegate each task to the specialist named in it and then merge "
+            "their reports into one analysis report."
         ),
         "goal": (
-            "Obtain complete, dated and source-backed outputs from every specialist "
-            "(at most one rework request each), resolve conflicts between sources "
-            "and consolidate everything into one structured analysis report."
+            "Get one report from each specialist, then merge them into a single "
+            "analysis report, resolving conflicts between sources."
         ),
         "responsibilities": [
-            "delegate each task to the specialist that owns the area",
-            "check that every output stays within the owner's area, without overlaps",
-            "check completeness: sources, access dates and confidence levels",
-            "request at most one rework per specialist, listing the exact gaps",
-            "after the rework, record remaining gaps as missing instead of insisting",
-            "resolve conflicting findings across specialists",
-            "consolidate all outputs into the final analysis report",
+            "delegate each task once to the specialist named in it, passing the task text unchanged",
+            "if a report is incomplete, record the gaps as missing instead of delegating again",
+            "place each report in its own section without changing its findings",
+            "resolve conflicting findings: primary source over secondary, more recent over older, "
+            "verified over claimed over to-be-confirmed; if undecidable, keep both and mark as to be confirmed, with a rationale",
         ],
         "constraints": [
             "Never perform research or add facts that the specialists did not provide.",
-            "Never rewrite a finding: accept it, discard it with a reason, or mark it tbc.",
-            (
-                "Conflict resolution order: primary source over secondary source; "
-                "more recent source over older one; verified over claimed over tbc."
-            ),
-            (
-                "If a conflict is still undecidable, do not choose: keep both findings "
-                "and mark the value as tbc."
-            ),
-            "Record every resolved conflict with its rationale.",
-            "Never invent missing information; list it as missing.",
-            "If an agent fails and there are missing data, just mark them as missing. Do not propagate the error"
+            "Never invent information: list it as missing.",
         ],
+        "limits": {"max_iter": 5, "max_execution_time": 300},
     },
     "Team Analyst": {
         "name": "Team Analyst",
@@ -233,6 +216,7 @@ AGENTS = {
             ),
             "Assessment should be evidence-based and clearly mark unknowns.",
         ],
+        "limits": {"max_iter": 5, "max_execution_time": 240},
     },
     "Debate Formatter": {
         "name": "Debate Formatter",
@@ -263,6 +247,7 @@ AGENTS = {
         "constraints": [
             "Must not create new facts or add new analysis.",
         ],
+        "limits": {"max_iter": 2, "max_execution_time": 120},
     },
     "Opportunity Analyst": {
         "name": "Opportunity Analyst",
@@ -297,6 +282,7 @@ AGENTS = {
             "Cannot ignore missing data.",
             "If a positive argument is based on weak evidence, state that clearly.",
         ],
+        "limits": {"max_iter": 2, "max_execution_time": 120},
     },
     "Risk Analyst": {
         "name": "Risk Analyst",
@@ -331,6 +317,7 @@ AGENTS = {
                 "missing data from the debate pack."
             ),
         ],
+        "limits": {"max_iter": 2, "max_execution_time": 120},
     },
     "Debate Judge": {
         "name": "Debate Judge",
@@ -362,6 +349,7 @@ AGENTS = {
             "Must not write the final memo.",
             "Produces the debate conclusion that the Memo Writer will later use.",
         ],
+        "limits": {"max_iter": 2, "max_execution_time": 120},
     },
     "Memo Writer": {
         "name": "Memo Writer",
@@ -400,5 +388,6 @@ AGENTS = {
             "Must clearly separate facts, assumptions, risks, and missing data.",
             "If evidence is weak, the memo should say so explicitly.",
         ],
+        "limits": {"max_iter": 2, "max_execution_time": 300},
     },
 }
