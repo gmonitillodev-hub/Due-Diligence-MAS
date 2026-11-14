@@ -22,6 +22,21 @@ class CompanyInput(BaseModel):
             parts.append(f"sector: {self.company_sector}")
         return ", ".join(parts)
 
+    def profile_topic(self) -> str:
+        """Company description plus the generic info from the profiling crew."""
+        generic = "\n".join(f"- {e}" for e in self.general_info)
+        return f"{self.describe()}\n\nCOMPANY PROFILE:\n{generic}"
+
+    def topic_for(self, specialist: str) -> str:
+        """Company description plus generic info and the specs of the given specialist: tech, commercial or team."""
+        generic = "\n".join(f"- {e}" for e in self.general_info)
+        own = "\n".join(f"- {e}" for e in getattr(self, f"{specialist}_specs"))
+        return (
+            f"{self.describe()}\n\n"
+            f"GENERIC INFO:\n{generic}\n\n"
+            f"{specialist.upper()} INPUTS:\n{own}"
+        )
+
 
 class CompanyProfile(BaseModel):
     """Profiling output: shared facts plus one list of entries per specialist."""

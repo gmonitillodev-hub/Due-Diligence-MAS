@@ -1,4 +1,5 @@
 from crewai import Agent, Task, Crew, Process
+from due_diligence_mas.crewai_fr.utils import is_verbose
 from due_diligence_mas.crewai_fr.agents.analysts.analyst_supervisor import AnalystSupervisor
 from due_diligence_mas.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
 from due_diligence_mas.crewai_fr.agents.memo_writer import MemoWriter_Agent
@@ -53,7 +54,7 @@ class ProfilerCrew():
             process=Process.hierarchical,
             manager_agent=self.supervisor.get_agent(),
             tracing=True,
-            verbose=True
+            verbose=is_verbose("crew")
         )
 
         # The manager runs every task and would otherwise use the profiler's tools itself;
@@ -68,7 +69,26 @@ class ProfilerCrew():
         if not hasattr(self, 'crew'):
             self.build_crew()
         
-        return self.crew.kickoff()       
+        result = self.crew.kickoff()
+        self._log_executions(result)
+        return result
+
+    @staticmethod
+    def _entry_counts(output) -> str:
+        profile = getattr(output, "pydantic", None)
+        if not profile:
+            return f"no structured profile (raw chars: {len(output.raw)})"
+        counts = {f: len(getattr(profile, f)) for f in ("generic", "tech", "commercial", "team")}
+        return f"{counts} total={sum(counts.values())}"
+
+    def _log_executions(self, result):
+        """Print the size of each delegated execution next to the manager's final profile."""
+        print(f"\n{'-'*80}")
+        print(f"  Profiler executions: {len(self.profiler.raw_outputs)}")
+        for i, output in enumerate(self.profiler.raw_outputs, 1):
+            print(f"    Execution {i}: {len(output)} chars")
+        print(f"  Final profile (manager): {self._entry_counts(result)}")
+        print(f"{'-'*80}\n")
     
     def print_crew_info(self):
         print("Crew Agents:")

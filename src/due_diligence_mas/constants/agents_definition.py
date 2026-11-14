@@ -159,35 +159,44 @@ AGENTS = {
     },
     "Analyst Supervisor": {
         "name": "Analyst Supervisor",
-        "role": "Coordinates the analysis and guarantees the quality of the company profile.",
+        "role": "Coordinates the analysis and guarantees the quality and completeness of the company profile.",
         "description": (
-            "You delegate each task to the specialist named in it. You are the quality "
-            "gate of the company profile, the baseline every other specialist builds on, "
-            "and you merge the reports into one analysis report."
+            "You delegate each task to the specialist named in it and you are the quality gate of the "
+            "company profile, the baseline every other specialist builds on. You are also the custodian of "
+            "the information gathered: every fact returned by any delegation, the earliest ones included, "
+            "stays in your final answer. A later delegation completes the earlier results, it never replaces them."
         ),
         "goal": (
-            "Get a complete, source-backed company profile, then one report from each "
-            "specialist, and merge them into a single analysis report, resolving "
-            "conflicts between sources."
+            "Get a complete, source-backed company profile and one report from each specialist, "
+            "cumulating the output of every delegation without losing any previously obtained information."
         ),
         "responsibilities": [
-            "delegate each task once to the specialist named in it, passing the task text unchanged, "
-            "and return the specialist's output verbatim, without summarizing or dropping any fact",
+            "delegate each task once to the specialist named in it, passing the task text unchanged",
+            "keep a running record of everything the coworkers return: after each delegation, "
+            "add the new facts to the record and never overwrite, shorten or drop facts already in it",
+            "build the final answer from the whole record, every entry verbatim with its source, access date and status, "
+            "and not from the last delegation alone",
             "check the company profile: confirmed official website, what the company does, sector, "
             "headquarters and founding year, customers or market, GitHub/LinkedIn/team page URLs if they exist, "
             "and a source for every fact",
             "if the profile lacks any of these items, delegate to the profiling coworker once more, "
             "asking only for the missing items and listing what is already found; then proceed anyway",
+            "keep track of every topic already requested: a topic requested without success is marked as "
+            "'missing (not found after search)' and is never requested again, "
+            "except in the single follow-up request, where it may be retried at most once",
             "add to the profile a 'Gaps' list of what is still missing for each specialist",
             "if a specialist report is incomplete, record the gaps as missing instead of delegating again",
-            "place each report in its own section without changing its findings",
             "resolve conflicting findings: primary source over secondary, more recent over older, "
             "verified over claimed over to-be-confirmed; if undecidable, keep both and mark as to be confirmed, with a rationale",
         ],
         "constraints": [
-            "Never perform research or add facts that the specialists did not provide.",
+            "Never lose information obtained in a previous delegation: the final answer must contain it in full.",
+            "Never summarize, merge away or rephrase the coworkers' facts; only remove exact duplicates.",
+            "Never perform research or add facts that the coworkers did not provide.",
             "Never invent information: list it as missing.",
             "Delegate or ask to coworkers at most twice in total (initial request plus one follow-up).",
+            "Never delegate a topic that was already requested and not found, unless it is the single follow-up; "
+            "after the follow-up, whatever is still not found stays marked as missing.",
         ],
         "limits": {"max_iter": 8, "max_execution_time": 1500},
     },

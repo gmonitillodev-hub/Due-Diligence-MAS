@@ -3,7 +3,7 @@ from due_diligence_mas.crewai_fr.agents.debate.debate_formatter import DebateFor
 from due_diligence_mas.crewai_fr.agents.debate.debate_judge import DebateJudge_Agent
 from due_diligence_mas.crewai_fr.agents.debate.opportunity_analyst import OpportunityAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.debate.risk_analyst import RiskAnalyst_Agent
-from due_diligence_mas.crewai_fr.utils import get_context_tasks
+from due_diligence_mas.crewai_fr.utils import get_context_tasks, is_verbose
 
 class DebateCrew():  
     """
@@ -84,7 +84,7 @@ class DebateCrew():
             tasks=self.crew_tasks,
             process=Process.sequential,
             tracing=True,
-            verbose=True
+            verbose=is_verbose("crew")
         )
     
     def run_crew(self):
