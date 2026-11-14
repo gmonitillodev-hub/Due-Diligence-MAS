@@ -40,7 +40,7 @@ class TeamAnalyst_Agent(BaseAgent):
                 description=(
                     f"Review the founding team and organization of the target company: {topic}. "
                     "Start from the provided context (official URLs, findings, missing items): search only for information that is absent or listed as missing, and do not repeat searches already covered by the context. "
-                    "Use the team members, team page and LinkedIn URLs found by the Company Profiler as starting points. "
+                    "Use the team members, team page and LinkedIn URLs found during company profiling as starting points. "
                     "Cover founder backgrounds, prior exits, founder-market fit, leadership, hiring signals and key-person risk. "
                     "Use only public, verifiable information and mark unknowns as missing."
                 ),
