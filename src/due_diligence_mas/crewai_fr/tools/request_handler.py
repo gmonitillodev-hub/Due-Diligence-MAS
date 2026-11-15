@@ -2,19 +2,10 @@
 
 import html
 from datetime import datetime
-from pydantic import BaseModel
 import requests
 from crewai.tools import tool
 
-class Location(BaseModel):
-    city: str
-    timezone: str
-    country:str
-    region:str
-
-class CurrentContext(BaseModel):
-    location: Location
-    date_time: str
+from due_diligence_mas.classes import CurrentContext, Location
 
 @tool
 def get_current_context() -> CurrentContext:

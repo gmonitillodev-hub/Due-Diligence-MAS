@@ -4,16 +4,16 @@ from due_diligence_mas.crewai_fr.agents.analysts.analyst_supervisor import Analy
 from due_diligence_mas.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
 from due_diligence_mas.crewai_fr.agents.memo_writer import MemoWriter_Agent
 
-from due_diligence_mas.crewai_fr.models import CompanyInput
+from due_diligence_mas.classes import CompanyInfo
 
 class ProfilerCrew():  
     """
         Crew that profiles the target company (hierarchical, supervisor as manager).
     """
     
-    def __init__(self, args = {}):
+    def __init__(self, company_info: CompanyInfo):
         
-        self.topic = CompanyInput(**args).describe()
+        self.topic = company_info.describe()
     
         self.crew_agents: list[Agent] = []
         self.crew_tasks: list[Task] = []

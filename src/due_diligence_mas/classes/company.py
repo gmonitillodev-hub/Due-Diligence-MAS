@@ -1,41 +1,23 @@
 from typing import Optional
-
 from pydantic import BaseModel, Field
 
+class CompanyInfo(BaseModel):
+    """Target company information provided by the user."""
 
-class CompanyInput(BaseModel):
-    """Typed target company information provided by the user."""
-
-    company_name: str
+    company_name: Optional[str] = None
     company_site: Optional[str] = None
     company_sector: Optional[str] = None
-    general_info: list[str] = Field(default_factory=list)
-    tech_specs: list[str] = Field(default_factory=list)
-    commercial_specs: list[str] = Field(default_factory=list)
-    team_specs: list[str] = Field(default_factory=list)
+    additional_info: Optional[str] = None
 
     def describe(self) -> str:
-        parts = [self.company_name]
+        parts = [self.company_name or "Unknown company"]
         if self.company_site:
             parts.append(f"official website: {self.company_site}")
         if self.company_sector:
             parts.append(f"sector: {self.company_sector}")
+        if self.additional_info:
+            parts.append(f"additional information: {self.additional_info}")
         return ", ".join(parts)
-
-    def profile_topic(self) -> str:
-        """Company description plus the generic info from the profiling crew."""
-        generic = "\n".join(f"- {e}" for e in self.general_info)
-        return f"{self.describe()}\n\nCOMPANY PROFILE:\n{generic}"
-
-    def topic_for(self, specialist: str) -> str:
-        """Company description plus generic info and the specs of the given specialist: tech, commercial or team."""
-        generic = "\n".join(f"- {e}" for e in self.general_info)
-        own = "\n".join(f"- {e}" for e in getattr(self, f"{specialist}_specs"))
-        return (
-            f"{self.describe()}\n\n"
-            f"GENERIC INFO:\n{generic}\n\n"
-            f"{specialist.upper()} INPUTS:\n{own}"
-        )
 
 
 class CompanyProfile(BaseModel):
@@ -51,3 +33,24 @@ class CompanyProfile(BaseModel):
         generic = "\n".join(f"- {e}" for e in self.generic)
         own = "\n".join(f"- {e}" for e in getattr(self, specialist))
         return f"GENERIC INFO:\n{generic}\n\n{specialist.upper()} INPUTS:\n{own}"
+
+
+class ProfiledCompany(BaseModel):
+    """Target company info together with the profile produced by the profiling crew."""
+
+    company_info: CompanyInfo
+    company_profile: Optional[CompanyProfile] = None
+
+    def describe(self) -> str:
+        return self.company_info.describe()
+
+    def profile_topic(self) -> str:
+        """Company description plus the generic info from the profiling crew."""
+        generic = "\n".join(f"- {e}" for e in self.company_profile.generic) if self.company_profile else ""
+        return f"{self.describe()}\n\nCOMPANY PROFILE:\n{generic}"
+
+    def topic_for(self, specialist: str) -> str:
+        """Company description plus generic info and the entries of the given specialist: tech, commercial or team."""
+        if not self.company_profile:
+            return self.describe()
+        return f"{self.describe()}\n\n{self.company_profile.for_specialist(specialist)}"

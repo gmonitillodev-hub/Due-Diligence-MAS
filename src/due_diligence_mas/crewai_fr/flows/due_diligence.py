@@ -1,22 +1,20 @@
 from crewai.flow.flow import Flow, start, listen, router, or_
+from due_diligence_mas.classes import CompanyInfo, ProfiledCompany, CompanyProfile
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.crewai_fr.crews.debate import DebateCrew
 from due_diligence_mas.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.crewai_fr.tools.file_generator import generate_memo_file
-from due_diligence_mas.crewai_fr.models.analysis import CompanyProfile
 from due_diligence_mas.crewai_fr.utils import is_verbose
+from due_diligence_mas.utils.request_handling import print_welcome_message, request_company_info
 from pydantic import BaseModel
 
 from typing import Optional
 
 class DueDiligenceFlow_State(BaseModel):
     
-    # Company information to search and analyze
-    company_name: Optional[str] = None
-    company_site: Optional[str] = None
-    company_sector: Optional[str] = None
+    company_info: Optional[CompanyInfo] = None
     
     # Profiling output
     profile: Optional[CompanyProfile] = None
@@ -32,25 +30,16 @@ class DueDiligenceFlow_State(BaseModel):
 
 class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     
-    def _print_welcome_message(self):
-        print("=" * 80)
-        print(f"{'Due Diligence Flow':^80}")
-        print("\n   Welcome to the Due Diligence Flow. \n   This flow will guide you through the process of analyzing a target company,\n   reviewing its technology, commercial aspects, and team dynamics, and\n   generating a comprehensive report.\n")
-        print("=" * 80)
-        print("\n")
-    
     @start()
     def initialize_flow(self):
         """
         Initialize the due diligence flow.
         """
-        self._print_welcome_message()
+        print_welcome_message()
         
-        self.state.company_name = input("Enter the target company name: ")
-        self.state.company_site = input("Enter the target company website (optional): ")
-        self.state.company_sector = input("Enter the target company sector (optional): ")
-        
-        return True 
+        self.state.company_info = request_company_info()
+    
+        return self.state.company_info
     
     @listen(initialize_flow)
     def profile_company(self):
@@ -58,15 +47,9 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             Profile the target company.
         """
         
-        print(f"\n  Profiling the target company: {self.state.company_name}...\n")
+        print(f"\n  Profiling the target company: {self.state.company_info.company_name}...\n")
                 
-        analyst_crew = ProfilerCrew(
-            args={
-                "company_name": self.state.company_name,
-                "company_site": self.state.company_site,
-                "company_sector": self.state.company_sector
-            }
-        )
+        analyst_crew = ProfilerCrew(company_info=self.state.company_info)
                     
         report = analyst_crew.run_crew()
         profile = report.pydantic
@@ -80,18 +63,13 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         """
         Analyze the target company.
         """
-        print(f"\n  Analyzing the target company: {self.state.company_name}...\n")
+        print(f"\n  Analyzing the target company: {self.state.company_info.company_name}...\n")
         
         analyst_crew = AnalystCrew(
-            args={
-                "company_name": self.state.company_name,
-                "company_site": self.state.company_site,
-                "company_sector": self.state.company_sector,
-                "general_info": self.state.profile.generic,
-                "tech_specs": self.state.profile.tech,
-                "commercial_specs": self.state.profile.commercial,
-                "team_specs": self.state.profile.team
-            },
+            company=ProfiledCompany(
+                company_info=self.state.company_info,
+                company_profile=self.state.profile
+            ),
             required_agents=[
                     AgentName.TECH_REVIEWER.value, 
                     AgentName.COMMERCIAL_ANALYST.value,
@@ -152,7 +130,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         result = memo_crew.run_crew()
         self.state.final_report = result.raw
         self.state.final_report_path = str(
-            generate_memo_file(self.state.company_name, self.state.final_report)
+            generate_memo_file(self.state.company_info.company_name, self.state.final_report)
         )
         print(f"\n Memo saved to: {self.state.final_report_path}")
     

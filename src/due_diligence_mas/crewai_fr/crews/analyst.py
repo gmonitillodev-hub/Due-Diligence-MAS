@@ -5,7 +5,7 @@ from due_diligence_mas.crewai_fr.agents.analysts.commercial_analyst import Comme
 from due_diligence_mas.crewai_fr.agents.memo_writer import MemoWriter_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
-from due_diligence_mas.crewai_fr.models import CompanyInput
+from due_diligence_mas.classes import ProfiledCompany
 
 class AnalystCrew():  
     """
@@ -13,9 +13,9 @@ class AnalystCrew():
         Sequential crew: the specialists run first, then the Memo Writer aggregates their reports.
     """
     
-    def __init__(self, args = {}, required_agents: list[str] = []):
+    def __init__(self, company: ProfiledCompany, required_agents: list[str] = []):
         
-        self.company = CompanyInput(**args)
+        self.company = company
         self.topic = self.company.describe()
     
         self.crew_agents: list[Agent] = []
