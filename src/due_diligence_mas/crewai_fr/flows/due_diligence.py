@@ -136,7 +136,11 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     
         return self.state.final_report
     
-if __name__ == "__main__":
+def main():
     flow = DueDiligenceFlow(tracing=True, suppress_flow_events=not is_verbose("flow"))
     flow.kickoff()
+
+
+if __name__ == "__main__":
+    main()
 
