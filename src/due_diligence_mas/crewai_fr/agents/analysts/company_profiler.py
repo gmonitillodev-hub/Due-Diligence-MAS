@@ -1,7 +1,7 @@
 from crewai import Agent, Task, Crew, Process, LLM
 from crewai.agents.parser import AgentFinish
 from due_diligence_mas.crewai_fr.agents import BaseAgent
-from due_diligence_mas.crewai_fr.agents.classes.llm_provider import LLM_PROVIDER
+from due_diligence_mas.providers.llm_provider import LLM_PROVIDER
 from due_diligence_mas.crewai_fr.tools.request_handler import get_current_context
 from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits, is_verbose

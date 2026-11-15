@@ -2,7 +2,7 @@ from crewai import Agent, Task, Crew, Process
 from due_diligence_mas.crewai_fr.utils import is_verbose
 from due_diligence_mas.constants.agents_definition import AgentName
 from due_diligence_mas.crewai_fr.agents.analysts.commercial_analyst import CommercialAnalyst_Agent
-from due_diligence_mas.crewai_fr.agents.memo_writer import MemoWriter_Agent
+from due_diligence_mas.crewai_fr.agents.writer.memo_writer import MemoWriter_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
 from due_diligence_mas.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
 from due_diligence_mas.classes import ProfiledCompany

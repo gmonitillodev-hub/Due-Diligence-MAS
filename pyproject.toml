@@ -16,6 +16,9 @@ dependencies = [
     "langchain-apify (>=0.2.0,<0.3.0)"
 ]
 
+[project.scripts]
+due-diligence = "due_diligence_mas.crewai_fr.flows.due_diligence:main"
+
 [tool.poetry]
 packages = [{include = "due_diligence_mas", from = "src"}]
 
