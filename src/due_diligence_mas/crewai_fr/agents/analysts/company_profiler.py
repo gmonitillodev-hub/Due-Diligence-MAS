@@ -6,7 +6,7 @@ from due_diligence_mas.crewai_fr.tools.request_handler import get_current_contex
 from due_diligence_mas.crewai_fr.tools.tavily import get_tavily_tool
 from due_diligence_mas.crewai_fr.utils import backstory_builder, extract_agent, agent_limits, is_verbose
 from due_diligence_mas.constants.agents_definition import AgentName
-from due_diligence_mas.crewai_fr.models import CompanyProfile
+from due_diligence_mas.classes import CompanyProfile
 
 class CompanyProfiler_Agent(BaseAgent):
     
