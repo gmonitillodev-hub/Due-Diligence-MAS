@@ -38,7 +38,7 @@ class CompanyProfile(BaseModel):
 class ProfiledCompany(BaseModel):
     """Target company info together with the profile produced by the profiling crew."""
 
-    company_info: CompanyInfo
+    company_info: Optional[CompanyInfo] = None
     company_profile: Optional[CompanyProfile] = None
 
     def describe(self) -> str:
