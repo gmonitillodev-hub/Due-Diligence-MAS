@@ -5,7 +5,7 @@ from due_diligence_mas.mas_definition.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.debate import DebateCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.writer import MemoWriterCrew
-from due_diligence_mas.mas_definition.crewai_fr.tools.file_generator import generate_memo_file
+from due_diligence_mas.mas_definition.tools.file_generator import generate_memo_file
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.request_handling import print_welcome_message, request_company_info
 from pydantic import BaseModel

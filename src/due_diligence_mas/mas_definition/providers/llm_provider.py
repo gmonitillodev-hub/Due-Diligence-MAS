@@ -1,6 +1,8 @@
 import os
 from crewai import LLM
 from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+
 
 class GroqSafeLLM(LLM):
     """Strips crewai's `cache_breakpoint` flag, which Groq rejects via LiteLLM."""
@@ -65,4 +67,9 @@ class LLM_PROVIDER():
 
     def get_llm(self):
         return self.llm 
+
+    def get_chat_model(self):
+
+        model_provider, model_name = self.model.split("/", 1)
+        return init_chat_model(model=model_name, model_provider=model_provider, temperature=self.temperature)
          

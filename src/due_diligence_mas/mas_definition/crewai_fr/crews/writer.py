@@ -1,6 +1,6 @@
 from crewai import Agent, Task, Crew, Process
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
-from due_diligence_mas.mas_definition.crewai_fr.agents.writer.memo_writer import MemoWriter_Agent
+from due_diligence_mas.mas_definition.agents.writer.memo_writer import MemoWriter_Agent
 
 class MemoWriterCrew():  
     """

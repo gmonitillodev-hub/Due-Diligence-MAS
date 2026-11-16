@@ -2,7 +2,6 @@ import os
 import re
 
 import requests
-from crewai.tools import tool
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,7 +26,6 @@ def _contributors(full_name: str) -> int | None:
     return int(match.group(1)) if match else len(resp.json())
 
 
-@tool("GitHub repositories")
 def github_repos(owner: str, max_repos: int = 5) -> str:
     """List the top public repositories (by stars) of a GitHub organization or user with
     name, URL, description, stars, forks, license, languages, last push and contributors count.

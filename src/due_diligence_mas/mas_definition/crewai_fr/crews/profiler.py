@@ -1,8 +1,8 @@
 from crewai import Agent, Task, Crew, Process
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
-from due_diligence_mas.mas_definition.crewai_fr.agents.analysts.analyst_supervisor import AnalystSupervisor
-from due_diligence_mas.mas_definition.crewai_fr.agents.analysts.company_profiler import CompanyProfiler_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.writer.memo_writer import MemoWriter_Agent
+from due_diligence_mas.mas_definition.agents.analysts.analyst_supervisor import AnalystSupervisor
+from due_diligence_mas.mas_definition.agents.analysts.company_profiler import CompanyProfiler_Agent
+from due_diligence_mas.mas_definition.agents.writer.memo_writer import MemoWriter_Agent
 
 from due_diligence_mas.mas_definition.classes import CompanyInfo
 

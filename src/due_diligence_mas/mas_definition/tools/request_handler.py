@@ -3,11 +3,9 @@
 import html
 from datetime import datetime
 import requests
-from crewai.tools import tool
 
 from due_diligence_mas.mas_definition.classes import CurrentContext, Location
 
-@tool
 def get_current_context() -> CurrentContext:
     """
     Retrieves the current context of the conversation or interaction.

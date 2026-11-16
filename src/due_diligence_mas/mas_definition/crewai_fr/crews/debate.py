@@ -1,9 +1,9 @@
 from crewai import Agent, Task, Crew, Process, LLM
-from due_diligence_mas.mas_definition.crewai_fr.agents.debate.debate_formatter import DebateFormatter_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.debate.debate_judge import DebateJudge_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.debate.opportunity_analyst import OpportunityAnalyst_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.debate.risk_analyst import RiskAnalyst_Agent
-from due_diligence_mas.crewai_fr.utils import get_context_tasks
+from due_diligence_mas.mas_definition.agents.debate.debate_formatter import DebateFormatter_Agent
+from due_diligence_mas.mas_definition.agents.debate.debate_judge import DebateJudge_Agent
+from due_diligence_mas.mas_definition.agents.debate.opportunity_analyst import OpportunityAnalyst_Agent
+from due_diligence_mas.mas_definition.agents.debate.risk_analyst import RiskAnalyst_Agent
+from due_diligence_mas.mas_definition.crewai_fr.utils import get_context_tasks
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 
 class DebateCrew():  

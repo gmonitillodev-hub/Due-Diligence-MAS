@@ -1,10 +1,10 @@
 from crewai import Agent, Task, Crew, Process
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
-from due_diligence_mas.mas_definition.crewai_fr.agents.analysts.commercial_analyst import CommercialAnalyst_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.writer.memo_writer import MemoWriter_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.analysts.team_analyst import TeamAnalyst_Agent
-from due_diligence_mas.mas_definition.crewai_fr.agents.analysts.tech_reviewer import TechReviewer_Agent
+from due_diligence_mas.mas_definition.agents.analysts.commercial_analyst import CommercialAnalyst_Agent
+from due_diligence_mas.mas_definition.agents.writer.memo_writer import MemoWriter_Agent
+from due_diligence_mas.mas_definition.agents.analysts.team_analyst import TeamAnalyst_Agent
+from due_diligence_mas.mas_definition.agents.analysts.tech_reviewer import TechReviewer_Agent
 from due_diligence_mas.mas_definition.classes import ProfiledCompany
 
 class AnalystCrew():  
@@ -50,7 +50,6 @@ class AnalystCrew():
             Build tasks for each agent based on the topic and context
         """
 
-        
         if hasattr(self, 'tech_reviewer'):        
             self.tech_reviewer.build_tasks(self.company.topic_for("tech"))
             self.crew_tasks.extend(self.tech_reviewer.get_tasks())
@@ -65,7 +64,7 @@ class AnalystCrew():
 
         # Aggregation, run by the memo writer on all the specialists' outputs
         specialist_tasks = list(self.crew_tasks)
-        self.memo_writer.build_aggregation_tasks(self.company.profile_topic(), context=specialist_tasks)
+        self.memo_writer.build_tasks(self.company.profile_topic(), context=specialist_tasks, key="aggregation")
         self.crew_tasks.extend(self.memo_writer.get_tasks())
     
     def build_crew(self):
