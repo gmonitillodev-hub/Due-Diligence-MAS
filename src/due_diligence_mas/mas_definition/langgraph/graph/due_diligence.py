@@ -8,6 +8,7 @@ from due_diligence_mas.mas_definition.langgraph.node.request_handler import requ
 from due_diligence_mas.mas_definition.langgraph.node.writer import analysis_aggregator_node, memo_writer_node
 from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name as node_name
 from langgraph.graph import StateGraph, START, END
+from dotenv import load_dotenv
 
 REQUEST_HANDLER_NODE = "request_handler"
 PROFILER_NODE = node_name(AgentName.COMPANY_PROFILER)
@@ -27,6 +28,8 @@ AGENT_NODES = {
 class DueDiligence_Graph():
     
     def __init__(self):
+        
+        load_dotenv()
         
         self.graph_builder = StateGraph(DueDiligence_State)
         
