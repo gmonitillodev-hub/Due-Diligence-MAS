@@ -7,6 +7,7 @@ from due_diligence_mas.mas_definition.constants.langgraph import ANALYSIS_AGGREG
 from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State
 from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
+from due_diligence_mas.mas_definition.utils.file_generator import generate_memo_file
 
 
 def _run_writer_agent(node: str, task: str, topic: str) -> str:
@@ -52,5 +53,9 @@ def memo_writer_node(state: DueDiligence_State):
         f"ANALYSIS:\n{state.analysis_results}\n\n"
         f"DEBATE:\n{state.debate_results or 'Debate not performed'}"
     )
+    
+    final_report =_run_writer_agent(get_agent_node_name(AgentName.MEMO_WRITER), "memo", topic)
+    
+    generate_memo_file(state.company_info.company_name, final_report)
 
-    return {"final_report": _run_writer_agent(get_agent_node_name(AgentName.MEMO_WRITER), "memo", topic)}
+    return {"final_report": final_report}
