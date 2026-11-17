@@ -2705,6 +2705,27 @@ typing-extensions = ">=4.7.0"
 uuid-utils = ">=0.12.0"
 
 [[package]]
+name = "langchain-openai"
+version = "1.8.0"
+description = "An integration package connecting OpenAI and LangChain"
+optional = false
+python-versions = "<4.0.0,>=3.11.0"
+groups = ["main"]
+files = [
+    {file = "langchain_openai-1.8.0-py3-none-any.whl", hash = "sha256:55a6aca37b7d4fa7011fef7faad53e6a544640c2b9a2fecf2e18d95115497555"},
+    {file = "langchain_openai-1.8.0.tar.gz", hash = "sha256:670a39def25c550ac7b828f6c4336f5653a440e992584590f6cc168525d993b7"},
+]
+
+[package.dependencies]
+certifi = ">=2024.6.2"
+langchain-core = ">=1.8.0,<2.0.0"
+openai = ">=2.45.0"
+tiktoken = ">=0.7.0"
+
+[package.extras]
+azure-identity = ["aiohttp (>=3.11.0)", "azure-identity (>=1.25.0)"]
+
+[[package]]
 name = "langchain-protocol"
 version = "0.0.21"
 description = "Python bindings for the LangChain agent streaming protocol"
@@ -7318,4 +7339,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "1a97780562c22cef3d732fd449467aa39d5da5deb18054a166a3828819d9a427"
+content-hash = "e5a63bd3f8ab2d209e4a5eaad19008f8271fab5dd2a222c821b61cc14e831621"

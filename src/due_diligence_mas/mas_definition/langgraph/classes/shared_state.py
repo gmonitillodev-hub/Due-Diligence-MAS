@@ -1,8 +1,23 @@
-from due_diligence_mas.mas_definition.classes.company import ProfiledCompany
-from typing import  Annotated, Optional
+from due_diligence_mas.mas_definition.classes.company import CompanyProfile, ProfiledCompany
+from typing import Annotated, Optional
 import operator
+from pydantic import Field
+
+
+def merge_profile(old: Optional[CompanyProfile], new: Optional[CompanyProfile]) -> Optional[CompanyProfile]:
+    """Reducer: overwrite only the profile fields explicitly set by the node, keep the others."""
+    if old is None or new is None:
+        return new if old is None else old
+    return old.model_copy(update={k: getattr(new, k) for k in new.model_fields_set})
+
 
 class DueDiligence_State(ProfiledCompany):
-    
-    messages: Optional[Annotated[list, operator.add]] = None
-    
+
+    company_profile: Annotated[Optional[CompanyProfile], merge_profile] = None
+    analysis_results: Optional[str] = None
+    debate_pack: Optional[str] = None
+    pro_case: Optional[str] = None
+    contro_case: Optional[str] = None
+    debate_results: Optional[str] = None
+    final_report: Optional[str] = None
+    messages: Annotated[list, operator.add] = Field(default_factory=list)

@@ -22,7 +22,7 @@ SEARCH_CONFIGS = {
     },
     "profile_search": {
         "search_depth": "advanced",
-        "max_results": 6,
+        "max_results": 4,
         "include_answer": False,
     },
     "funding_search": {
@@ -40,13 +40,36 @@ SEARCH_CONFIGS = {
 }
 
 
+MAX_CONTENT_CHARS = 10000
+
+
+def _truncate_results(output, max_chars: int = MAX_CONTENT_CHARS):
+    """Cut the text of every result so tool outputs do not fill the agent context."""
+    if isinstance(output, dict):
+        for item in output.get("results") or []:
+            for key in ("content", "raw_content"):
+                if isinstance(item.get(key), str) and len(item[key]) > max_chars:
+                    item[key] = item[key][:max_chars] + "... [truncated]"
+    return output
+
+
+class _TruncatedTavilySearch(TavilySearch):
+    def _run(self, *args, **kwargs):
+        return _truncate_results(super()._run(*args, **kwargs))
+
+
+class _TruncatedTavilyExtract(TavilyExtract):
+    def _run(self, *args, **kwargs):
+        return _truncate_results(super()._run(*args, **kwargs))
+
+
 def _tool_classes(framework: Framework):
     """(search, extract) tool classes of the framework, imported lazily so only the one in use is required."""
     match framework:
         case Framework.CREW_AI:
             return TavilySearchTool, TavilyExtractorTool
         case Framework.LANG_GRAPH:
-            return TavilySearch, TavilyExtract
+            return _TruncatedTavilySearch, _TruncatedTavilyExtract
         case _:
             raise ValueError(f"Unknown framework '{framework}'")
 

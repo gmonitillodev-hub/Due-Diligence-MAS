@@ -35,13 +35,13 @@ class SpecAgent(BaseAgent):
     delegation: bool = False
     tasks_def: dict[str, TaskDef] = {}
 
-    def __init__(self, framework: Framework = Framework.CREW_AI):
+    def __init__(self, framework: Framework = Framework.CREW_AI, task="main"):
         self.framework = framework
         self.spec = extract_agent(self.name.value)
         self.backstory = backstory_builder(self.name.value)
         self.limits = agent_limits(self.name.value)
         self.tasks = []
-        self.agent = self._adapter().build_agent(self)
+        self.agent = self._adapter().build_agent(self, task)
 
     def crewai_kwargs(self) -> dict:
         """Extra crewai.Agent arguments for agents that need them."""

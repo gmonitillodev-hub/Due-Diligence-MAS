@@ -3,8 +3,6 @@ from due_diligence_mas.mas_definition.utils.request_handling import print_welcom
 
 def request_handler_node(state: DueDiligence_State):
     
-    print("🚀 ~ request_handler_node ~ state:", state)
-    
     print_welcome_message()
     company_info = request_company_info()
     

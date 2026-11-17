@@ -23,15 +23,15 @@ class CompanyInfo(BaseModel):
 class CompanyProfile(BaseModel):
     """Profiling output: shared facts plus one list of entries per specialist."""
 
-    generic: list[str] = Field(description="Generic company info, one entry per fact: fact | source URL | access date | status")
-    tech: list[str] = Field(description="Inputs and gaps for technology review, one entry per fact or gap")
-    commercial: list[str] = Field(description="Inputs and gaps for commercial analysis, one entry per fact or gap")
-    team: list[str] = Field(description="Inputs and gaps for team analysis, one entry per fact or gap")
+    generic: Optional[list[str]] = Field(default=None, description="Generic company info, one entry per fact: fact | source URL | access date | status")
+    tech: Optional[list[str]] = Field(default=None, description="Inputs and gaps for technology review, one entry per fact or gap")
+    commercial: Optional[list[str]] = Field(default=None, description="Inputs and gaps for commercial analysis, one entry per fact or gap")
+    team: Optional[list[str]] = Field(default=None, description="Inputs and gaps for team analysis, one entry per fact or gap")
 
     def for_specialist(self, specialist: str) -> str:
         """Generic info plus the entries of the given specialist: tech, commercial or team."""
-        generic = "\n".join(f"- {e}" for e in self.generic)
-        own = "\n".join(f"- {e}" for e in getattr(self, specialist))
+        generic = "\n".join(f"- {e}" for e in self.generic or [])
+        own = "\n".join(f"- {e}" for e in getattr(self, specialist) or [])
         return f"GENERIC INFO:\n{generic}\n\n{specialist.upper()} INPUTS:\n{own}"
 
 
@@ -46,7 +46,7 @@ class ProfiledCompany(BaseModel):
 
     def profile_topic(self) -> str:
         """Company description plus the generic info from the profiling crew."""
-        generic = "\n".join(f"- {e}" for e in self.company_profile.generic) if self.company_profile else ""
+        generic = "\n".join(f"- {e}" for e in self.company_profile.generic or []) if self.company_profile else ""
         return f"{self.describe()}\n\nCOMPANY PROFILE:\n{generic}"
 
     def topic_for(self, specialist: str) -> str:
