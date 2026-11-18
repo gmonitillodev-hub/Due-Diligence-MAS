@@ -6,7 +6,8 @@ from pydantic import BaseModel
 from due_diligence_mas.mas_definition.agents import BaseAgent
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.common import Framework
-from due_diligence_mas.mas_definition.crewai_fr.utils import agent_limits, backstory_builder, extract_agent
+from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
+from due_diligence_mas.mas_definition.utils.extract_agent import agent_limits, extract_agent
 
 
 @dataclass(frozen=True)

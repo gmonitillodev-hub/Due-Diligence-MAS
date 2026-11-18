@@ -3,7 +3,7 @@ from due_diligence_mas.mas_definition.agents.debate.debate_formatter import Deba
 from due_diligence_mas.mas_definition.agents.debate.debate_judge import DebateJudge_Agent
 from due_diligence_mas.mas_definition.agents.debate.opportunity_analyst import OpportunityAnalyst_Agent
 from due_diligence_mas.mas_definition.agents.debate.risk_analyst import RiskAnalyst_Agent
-from due_diligence_mas.mas_definition.crewai_fr.utils import get_context_tasks
+from due_diligence_mas.mas_definition.utils.get_context_tasks import get_context_tasks
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 
 class DebateCrew():  

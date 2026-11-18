@@ -41,15 +41,20 @@ def debate_formatter_node(state: DueDiligence_State):
     return {"debate_pack": pack}
 
 
+def _debate_context(state: DueDiligence_State) -> str:
+    """Debate input: the formatter pack, or the analysis results when the formatter is skipped."""
+    return state.debate_pack or state.analysis_results or ""
+
+
 def opportunity_analyst_node(state: DueDiligence_State):
     
-    pro_case = _run_debate_agent(OpportunityAnalyst_Agent, "", [state.debate_pack])
+    pro_case = _run_debate_agent(OpportunityAnalyst_Agent, "", [_debate_context(state)])
     return {"pro_case": pro_case}
 
 
 def risk_analyst_node(state: DueDiligence_State):
     
-    contro_case = _run_debate_agent(RiskAnalyst_Agent, "", [state.debate_pack, state.pro_case])
+    contro_case = _run_debate_agent(RiskAnalyst_Agent, "", [_debate_context(state), state.pro_case])
     return {"contro_case": contro_case}
 
 

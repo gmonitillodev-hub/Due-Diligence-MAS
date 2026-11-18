@@ -1,0 +1,104 @@
+from pydantic import BaseModel
+
+from due_diligence_mas.mas_definition.classes.company import AnalysisReview, CompanyProfile, ProfileReview
+from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
+from due_diligence_mas.mas_definition.constants.langgraph import FAN_OUT_NODE, MAX_PROFILE_REVISIONS, skip_debate_formatter
+from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State, SupervisionState
+from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
+from due_diligence_mas.mas_definition.langgraph.node.profiler import PROFILER_NODE
+from due_diligence_mas.mas_definition.providers.llm_provider import LLM_PROVIDER
+from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name
+from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
+
+SUPERVISOR_NODE = "supervisor"
+
+MERGE_INSTRUCTIONS = (
+    "Merge the profile iterations below into one profile. Rules:\n"
+    "- keep EVERY fact of EVERY iteration: a later iteration completes the earlier ones, it never replaces them;\n"
+    "- if the same fact appears more than once, keep a single entry, preferring the most complete one (source URL, access date, strongest status);\n"
+    "- if iterations conflict on a fact, keep the better-sourced entry and note the conflict in the entry;\n"
+    "- a gap declared in an earlier iteration is dropped only if a later iteration fills it;\n"
+    "- do not invent, summarize or rewrite facts; keep the entry format: fact | source URL | access date | status."
+)
+
+REVIEW_CRITERIA = (
+    "Review the company profile below as the quality gate before the specialists build on it. Approve only if:\n"
+    "- generic, tech, commercial and team are all filled, with one entry per fact or declared gap;\n"
+    "- every fact entry has a source URL (never only a publication name), an access date and a status;\n"
+    "- the entries concern the target company (no homonyms) and are not generic or unsupported claims;\n"
+    "- missing information is declared explicitly as a gap, not omitted.\n"
+    "If not approved, list the concrete issues and give the profiler actionable feedback.\n"
+    "Issues listed under ALREADY REQUESTED were sent to the profiler in a previous iteration: never report them again, even if still open. "
+    "Report only NEW issues, and give feedback only for them. Approve if no new issue is left."
+)
+
+ANALYSIS_REVIEW_CRITERIA = (
+    "Review the aggregated analysis below, built from the analysts' reports, as the completeness gate before the debate. Give a completeness score from 0 to 10:\n"
+    "- 0 = nothing usable, 10 = every area fully covered and source-backed;\n"
+    "- check the analysis covers all the topics of each area (no skipped topics), is grounded in the profile facts and cites sources;\n"
+    "- check that gaps and open questions are declared explicitly, not hidden;\n"
+    "- penalize generic, unsupported or off-target statements;\n"
+    "- give ONE overall score for the whole analysis, not one per analyst, and list the concrete missing items."
+)
+
+
+def debate_entry_node() -> str:
+    """First node of the debate: the formatter, or the PRO analyst when the formatter is skipped."""
+    return get_agent_node_name(AgentName.OPPORTUNITY_ANALYST if skip_debate_formatter() else AgentName.DEBATE_FORMATTER)
+
+
+def _supervisor_llm_call(instructions: str, content: str, output_schema: type[BaseModel]):
+    """Single LLM call of the supervisor: given the instructions, the content to work on and the expected output schema, return the structured output."""
+    llm = LLM_PROVIDER().get_chat_model().with_structured_output(output_schema)
+    return llm.invoke([
+        {"role": "system", "content": backstory_builder(AgentName.ANALYST_SUPERVISOR.value)},
+        {"role": "user", "content": f"{instructions}\n\n{content}"},
+    ])
+
+
+def _merge_iterations(iterations: list[CompanyProfile]) -> CompanyProfile:
+    """Union of the profiles of all iterations into a single CompanyProfile."""
+    runs = "\n\n".join(f"ITERATION {i}:\n{p.model_dump_json(indent=2)}" for i, p in enumerate(iterations, 1))
+    merged = _supervisor_llm_call(MERGE_INSTRUCTIONS, runs, CompanyProfile)
+    _log(SUPERVISOR_NODE, "merged", iterations=len(iterations), entries={f: len(getattr(merged, f) or []) for f in CompanyProfile.model_fields})
+    return merged
+
+
+def _review_profile(state: DueDiligence_State):
+    """Profile gate: merges the iterations, then approves the profile or sends it back to the profiler with feedback."""
+    profile = _merge_iterations(state.profile_iterations) if len(state.profile_iterations) > 1 else state.company_profile
+    requested = "\n".join(f"- {i}" for i in state.supervision.requested_issues) or "- none"
+    review = _supervisor_llm_call(REVIEW_CRITERIA, f"COMPANY: {state.describe()}\n\nALREADY REQUESTED:\n{requested}\n\nPROFILE:\n{profile.model_dump_json(indent=2)}", ProfileReview)
+    # Safety net: an issue already requested is never sent again
+    seen = {i.strip().lower() for i in state.supervision.requested_issues}
+    review.issues = [i for i in review.issues if i.strip().lower() not in seen]
+    if not review.issues:
+        review.approved, review.feedback = True, ""
+    _log(SUPERVISOR_NODE, "profile review", approved=review.approved, new_issues=len(review.issues), already_requested=len(seen), revisions=state.supervision.profile_revisions)
+    # The profile gate is closed when approved or when the revisions are exhausted
+    validated = review.approved or state.supervision.profile_revisions > MAX_PROFILE_REVISIONS
+    return {"company_profile": profile, "supervision": SupervisionState(profile_review=review, profile_validated=validated, requested_issues=review.issues)}
+
+
+def _review_analysis(state: DueDiligence_State):
+    """Completeness gate: scores the aggregated analysis from 0 to 10 before the debate."""
+    generic = "\n".join(state.company_profile.generic or []) if state.company_profile else ""
+    review = _supervisor_llm_call(ANALYSIS_REVIEW_CRITERIA, f"COMPANY: {state.describe()}\n\nPROFILE:\n{generic}\n\nAGGREGATED ANALYSIS:\n{state.analysis_results}", AnalysisReview)
+    _log(SUPERVISOR_NODE, "analysis review", score=review.score, missing=len(review.missing))
+    return {"supervision": SupervisionState(analysis_review=review)}
+
+
+def supervisor_node(state: DueDiligence_State):
+    """Single supervisor node, guarantor of profiling quality and analysis completeness.
+
+    First visit(s), after the profiler: profile gate. Visit after the aggregator: completeness score."""
+    return _review_analysis(state) if state.supervision.profile_validated else _review_profile(state)
+
+
+def supervisor_router(state: DueDiligence_State):
+    """After the analysis review go on to the debate; after the profile gate go back to the profiler or to the fan out node."""
+    if state.supervision.analysis_review is not None:
+        return debate_entry_node()
+    if not state.supervision.profile_validated:
+        return PROFILER_NODE
+    return FAN_OUT_NODE

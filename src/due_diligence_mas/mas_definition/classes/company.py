@@ -35,6 +35,22 @@ class CompanyProfile(BaseModel):
         return f"GENERIC INFO:\n{generic}\n\n{specialist.upper()} INPUTS:\n{own}"
 
 
+class ProfileReview(BaseModel):
+    """Supervisor verdict on the company profile."""
+
+    approved: bool = Field(description="True only if the profile is complete, source-backed and usable by the specialists")
+    issues: list[str] = Field(default_factory=list, description="Concrete problems found: missing fields, facts without source URL, unsupported claims, gaps not declared")
+    feedback: str = Field(default="", description="Actionable instructions for the profiler to fix the issues; empty if approved")
+
+
+class AnalysisReview(BaseModel):
+    """Supervisor completeness verdict on the analysts' results."""
+
+    score: int = Field(ge=0, le=10, description="Single overall completeness score of all the analyses together, from 0 (nothing usable) to 10 (fully complete)")
+    missing: list[str] = Field(description="Concrete missing topics, unsupported claims or undeclared gaps; empty if none")
+    summary: str = Field(description="Short motivation of the score")
+
+
 class ProfiledCompany(BaseModel):
     """Target company info together with the profile produced by the profiling crew."""
 
