@@ -7,6 +7,12 @@ def agent_slug(agent_name: AgentName | str) -> str:
     return value.lower().replace(" ", "_")
 
 
+def get_node_name(name: str) -> str:
+    """Name of a LangGraph node, always "<snake_case_name>_node", e.g. "request handler" -> "request_handler_node"."""
+    slug = name.lower().replace(" ", "_")
+    return slug if slug.endswith("_node") else f"{slug}_node"
+
+
 def get_agent_node_name(agent_name: AgentName | str) -> str:
     """Name of the LangGraph node that runs the agent, e.g. "Tech Reviewer" -> "tech_reviewer_node"."""
-    return f"{agent_slug(agent_name)}_node"
+    return get_node_name(agent_slug(agent_name))

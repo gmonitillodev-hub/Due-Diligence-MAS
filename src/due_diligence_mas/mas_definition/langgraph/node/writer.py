@@ -1,10 +1,8 @@
 import time
 
 from due_diligence_mas.mas_definition.agents.writer.memo_writer import MemoWriter_Agent
-from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.common import Framework
-from due_diligence_mas.mas_definition.constants.langgraph import ANALYSIS_AGGREGATOR_NODE
-from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name
+from due_diligence_mas.mas_definition.constants.langgraph import ANALYSIS_AGGREGATOR_NODE, MEMO_WRITER_NODE
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State
 from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
 from due_diligence_mas.mas_definition.utils.file_generator import generate_memo_file
@@ -54,7 +52,7 @@ def memo_writer_node(state: DueDiligence_State):
         f"DEBATE:\n{state.debate_results or 'Debate not performed'}"
     )
     
-    final_report =_run_writer_agent(get_agent_node_name(AgentName.MEMO_WRITER), "memo", topic)
+    final_report =_run_writer_agent(MEMO_WRITER_NODE, "memo", topic)
     
     generate_memo_file(state.company_info.company_name, final_report)
 

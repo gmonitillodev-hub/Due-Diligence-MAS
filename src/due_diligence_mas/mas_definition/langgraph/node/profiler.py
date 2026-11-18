@@ -2,11 +2,9 @@ from due_diligence_mas.mas_definition.agents.analysts.company_profiler import Co
 from due_diligence_mas.mas_definition.classes.company import CompanyProfile
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.common import Framework
+from due_diligence_mas.mas_definition.constants.langgraph import PROFILER_NODE
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State, SupervisionState
 from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
-from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name
-
-PROFILER_NODE = get_agent_node_name(AgentName.COMPANY_PROFILER)
 
 def company_profiler_node(state: DueDiligence_State):
     profiler = CompanyProfiler_Agent(framework=Framework.LANG_GRAPH)

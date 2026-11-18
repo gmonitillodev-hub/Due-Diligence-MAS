@@ -42,6 +42,7 @@ class DueDiligence_State(ProfiledCompany):
 
     # --- Analysis and debate ---
     analysis_results: Optional[str] = None
+    human_decision: Optional[str] = None
     debate_pack: Optional[str] = None
     pro_case: Optional[str] = None
     contro_case: Optional[str] = None

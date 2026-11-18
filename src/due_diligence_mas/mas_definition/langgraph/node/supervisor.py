@@ -2,15 +2,12 @@ from pydantic import BaseModel
 
 from due_diligence_mas.mas_definition.classes.company import AnalysisReview, CompanyProfile, ProfileReview
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
-from due_diligence_mas.mas_definition.constants.langgraph import FAN_OUT_NODE, MAX_PROFILE_REVISIONS, skip_debate_formatter
+from due_diligence_mas.mas_definition.constants.langgraph import DEBATE_FORMATTER_NODE, FAN_OUT_NODE, HUMAN_REVIEW_NODE, MAX_PROFILE_REVISIONS, OPPORTUNITY_ANALYST_NODE, PROFILER_NODE, SUPERVISOR_NODE, skip_debate_formatter
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State, SupervisionState
 from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
-from due_diligence_mas.mas_definition.langgraph.node.profiler import PROFILER_NODE
 from due_diligence_mas.mas_definition.providers.llm_provider import LLM_PROVIDER
-from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name
 from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
 
-SUPERVISOR_NODE = "supervisor"
 
 MERGE_INSTRUCTIONS = (
     "Merge the profile iterations below into one profile. Rules:\n"
@@ -44,7 +41,7 @@ ANALYSIS_REVIEW_CRITERIA = (
 
 def debate_entry_node() -> str:
     """First node of the debate: the formatter, or the PRO analyst when the formatter is skipped."""
-    return get_agent_node_name(AgentName.OPPORTUNITY_ANALYST if skip_debate_formatter() else AgentName.DEBATE_FORMATTER)
+    return OPPORTUNITY_ANALYST_NODE if skip_debate_formatter() else DEBATE_FORMATTER_NODE
 
 
 def _supervisor_llm_call(instructions: str, content: str, output_schema: type[BaseModel]):
@@ -96,9 +93,9 @@ def supervisor_node(state: DueDiligence_State):
 
 
 def supervisor_router(state: DueDiligence_State):
-    """After the analysis review go on to the debate; after the profile gate go back to the profiler or to the fan out node."""
+    """After the analysis review go on to the human review; after the profile gate go back to the profiler or to the fan out node."""
     if state.supervision.analysis_review is not None:
-        return debate_entry_node()
+        return HUMAN_REVIEW_NODE
     if not state.supervision.profile_validated:
         return PROFILER_NODE
     return FAN_OUT_NODE

@@ -5,7 +5,7 @@ from due_diligence_mas.mas_definition.agents.analysts.tech_reviewer import TechR
 from due_diligence_mas.mas_definition.classes.company import CompanyProfile
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.common import Framework
-from due_diligence_mas.mas_definition.constants.langgraph import ENABLED_ANALYST_AGENTS, FAN_OUT_NODE
+from due_diligence_mas.mas_definition.constants.langgraph import COMMERCIAL_ANALYST_NODE, ENABLED_ANALYST_AGENTS, FAN_OUT_NODE, TEAM_ANALYST_NODE, TECH_REVIEWER_NODE
 from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_name
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State
 from langgraph.types import Send
@@ -35,7 +35,7 @@ def analyst_fan_out_node(state: DueDiligence_State):
 def tech_reviewer_node(state: DueDiligence_State):
     
     tech_reviewer = TechReviewer_Agent(framework=Framework.LANG_GRAPH)
-    node = get_agent_node_name(AgentName.TECH_REVIEWER)
+    node = TECH_REVIEWER_NODE
     _log(node, "start", company=state.company_info.company_name if state.company_info else None, has_profile=state.company_profile is not None)
     t0 = time.perf_counter()
     tech_reviewer.build_tasks(state.topic_for("tech"))
@@ -56,7 +56,7 @@ def tech_reviewer_node(state: DueDiligence_State):
 def commercial_analyst_node(state: DueDiligence_State):
     
     commercial_analyst = CommercialAnalyst_Agent(framework=Framework.LANG_GRAPH)
-    node = get_agent_node_name(AgentName.COMMERCIAL_ANALYST)
+    node = COMMERCIAL_ANALYST_NODE
     _log(node, "start", company=state.company_info.company_name if state.company_info else None, has_profile=state.company_profile is not None)
     t0 = time.perf_counter()
     commercial_analyst.build_tasks(state.topic_for("commercial"))
@@ -77,7 +77,7 @@ def commercial_analyst_node(state: DueDiligence_State):
 def team_analyst_node(state: DueDiligence_State):
     
     team_analyst = TeamAnalyst_Agent(framework=Framework.LANG_GRAPH)    
-    node = get_agent_node_name(AgentName.TEAM_ANALYST)
+    node = TEAM_ANALYST_NODE
     _log(node, "start", company=state.company_info.company_name if state.company_info else None, has_profile=state.company_profile is not None)
     t0 = time.perf_counter()
     team_analyst.build_tasks(state.topic_for("team"))
