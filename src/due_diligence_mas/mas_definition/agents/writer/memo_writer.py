@@ -28,59 +28,46 @@ class MemoWriter_Agent(SpecAgent):
                 """,
         ),
         "memo": TaskDef(
-            description="""  
-                    Write the complete due diligence memo from the following analysis and debate.
-                    First call the current context tool to get the user's country, and write the memo in that
-                    country's main language (translate the analysis and debate). If the country is unknown, write in English.
-                    Translate the text only: keep names, figures, dates, URLs and source titles unchanged.
-                    The analysis is the primary source: report it in full and in detail, section by section,
-                    keeping every finding with its source, access date and confidence level.
-                    Do not drop, merge away or generalize findings to save space: the memo has no length limit.
-                    The debate must only be summarized. Do not add information that is not in the input.
-                    {topic} 
+            description="""
+                    Write the due diligence memo from the analysis and the debate below.
+                    First call the current context tool: it returns the user's country and the current date and time.
+                    - Language: write the whole memo, section titles included, in the main language of that country
+                      (the tool gives the country code). If the country is unknown, write in English.
+                      Translate the text only: names, figures, URLs and source titles stay unchanged.
+                    - Dates: the current date from the tool is "today". Use it for the memo date and for every
+                      relative reference ("as of today", "X months ago", "recent", "upcoming"), by comparing the
+                      dates of the sources with it. Never assume a different date.
+                    The analysis is the primary source: carry all of its findings into the memo, with their figures,
+                    names, dates, sources and confidence level, and do not shorten them to save space (no length limit).
+                    The debate is only summarized. Add nothing that is not in the input.
+                    {topic}
                 """,
-            expected_output=""" 
-                    A complete due diligence memo, in the language of the user's country (English if unknown), in Markdown, with this structure
-                    (translate the section titles into that language):
+            expected_output="""
+                    A due diligence memo in Markdown, written as a flowing narrative that a person reads from top to bottom:
+                    connected paragraphs that explain the findings and how they relate, not a list of bullet points.
+                    Use tables only where they make data clearer (offering, customers, competitors, team members, risks).
+                    The language and the date follow the current context, as described in the task.
 
-                    # Due Diligence Memo — [Company]
-                    Date: [date] | Scope: [areas reviewed, evidence cutoff date, exclusions]
+                    Open with the title "Due Diligence Memo — [Company]", today's date and a line on the scope
+                    (areas reviewed, evidence cutoff, exclusions). Then cover, in the order that reads best:
+                    - an executive summary (about 250 words): the business, the material findings, the preliminary conclusion;
+                    - the company profile, the product and technology, the commercial picture and the team, each in
+                      depth and with the sources cited inline as [1], [2]; add a section for any other topic the
+                      analysis covers;
+                    - a short summary of the debate (PRO case, CONTRO case, the judge's conclusion), or a note that
+                      the debate was not performed;
+                    - the material risks, with evidence, potential impact and the follow-up needed;
+                    - the information gaps and limits of the evidence, with the priority questions;
+                    - the preliminary conclusion and next steps: whether the evidence supports going on, going on
+                      under conditions, or pausing, and why;
+                    - the numbered list of sources, with title, URL and publication or access date.
 
-                    ## Executive Summary
-                    Business, material findings and preliminary conclusion (max 250 words).
-
-                    ## Company Profile
-                    ## Product and Technology
-                    ## Commercial Analysis
-                    ## Team and Organization
-                    For each section report ALL the findings of the corresponding analysis, in detail,
-                    with figures, names, dates and periods/currencies, and cite them inline as [1], [2], etc.
-                    Use tables where they preserve information (offering, customers, competitors, team members).
-                    Tag each statement as verified, company claim, estimate or to be confirmed.
-                    Add other sections if the analysis contains topics not covered above.
-
-                    ## Debate Summary
-                    A short synthesis of the PRO case, the CONTRO case and the Judge's conclusion,
-                    or "Debate not performed".
-
-                    ## Material Risks
-                    Table: Risk | Supporting evidence | Potential impact | Required follow-up
-
-                    ## Information Gaps and Limitations
-                    Missing or conflicting information, unverified assumptions, priority questions.
-
-                    ## Preliminary Conclusion and Next Steps
-                    Whether the evidence supports further evaluation, conditional progress or a pause,
-                    with rationale and conditions. If the evidence is insufficient, say so explicitly.
-
-                    ## Sources
-                    Numbered list with title, URL and publication/access date.
-
-                    Requirements:
-                    - Completeness first: every finding of the analysis must appear in the memo.
-                    - Never invent facts or references; mark missing data as "Not available".
-                    - Do not treat missing evidence as proof that no risk exists.
-                    - Distinguish allegations from established findings.
+                    Along the way:
+                    - say whether each statement is verified, a company claim, an estimate or still to be confirmed,
+                      in the flow of the text and not as a label on every line;
+                    - never invent facts or references; say when data is not available;
+                    - missing evidence does not prove that a risk does not exist;
+                    - keep allegations apart from established findings.
                 """,
         ),
     }
