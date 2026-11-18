@@ -65,7 +65,9 @@ class SpecAgent(BaseAgent):
     def get_tasks(self):
         return self.tasks
 
-    def build_tasks(self, topic: str = "", context: list = [], key: str = "main"):
+    def build_tasks(self, topic: str | dict = "", context: list | None = None, key: str = "main"):
         if key not in self.tasks_def:
             raise KeyError(f"Unknown task '{key}' for {self.name.value}. Available: {', '.join(self.tasks_def)}")
-        self.tasks = self._adapter().build_tasks(self, self.tasks_def[key], topic, context)
+        if isinstance(topic, dict):
+            topic = "\n\n".join(f"## {name.capitalize()}\n{value}" for name, value in topic.items())
+        self.tasks = self._adapter().build_tasks(self, self.tasks_def[key], topic, context or [])

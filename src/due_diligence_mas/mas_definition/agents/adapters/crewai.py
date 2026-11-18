@@ -20,7 +20,7 @@ TOOLS = {
 }
 
 
-def build_agent(definition) -> Agent:
+def build_agent(definition, task: str = "main") -> Agent:
     return Agent(
         role=definition.spec["name"],
         goal=definition.spec["goal"],

@@ -1,3 +1,5 @@
+import os
+
 from crewai.flow.flow import Flow, start, listen, router, or_
 from due_diligence_mas.mas_definition.classes import CompanyInfo, ProfiledCompany, CompanyProfile
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
@@ -5,7 +7,8 @@ from due_diligence_mas.mas_definition.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.debate import DebateCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.writer import MemoWriterCrew
-from due_diligence_mas.mas_definition.utils.file_generator import generate_memo_file
+from due_diligence_mas.mas_definition.constants.common import Framework
+from due_diligence_mas.mas_definition.utils.execution_store import save_execution
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.request_handling import print_welcome_message, request_company_info
 from pydantic import BaseModel
@@ -21,8 +24,8 @@ class DueDiligenceFlow_State(BaseModel):
     
     # Results of the analysis and debate
     analysis_results: Optional[str] = None
-    analysis_usage_info: Optional[str] = None
-    analysis_total_time: Optional[str] = None
+    # Metrics of every executed crew, in execution order
+    crews_metrics: list[dict] = []
     
     debate_results: Optional[str] = None  
     final_report: Optional[str] = None
@@ -52,6 +55,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         analyst_crew = ProfilerCrew(company_info=self.state.company_info)
                     
         report = analyst_crew.run_crew()
+        self.state.crews_metrics.append(analyst_crew.metrics)
         profile = report.pydantic
         print(f"Report > {profile.model_dump_json(indent=2) if profile else report.raw}")
         self.state.profile = profile
@@ -78,9 +82,9 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             )
             
         report = analyst_crew.run_crew()
+        self.state.crews_metrics.append(analyst_crew.metrics)
 
         self.state.analysis_results = report
-        self.state.analysis_usage_info = str(analyst_crew.crew.token_usage)
 
         return self.state.analysis_results
     
@@ -108,7 +112,8 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             )
             
         print("\n   Running the crew...")
-        result = debate_crew.run_crew()                
+        result = debate_crew.run_crew()
+        self.state.crews_metrics.append(debate_crew.metrics)                
         self.state.debate_results = result.raw
         
         return result
@@ -128,13 +133,32 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         )
           
         result = memo_crew.run_crew()
+        self.state.crews_metrics.append(memo_crew.metrics)
         self.state.final_report = result.raw
         self.state.final_report_path = str(
-            generate_memo_file(self.state.company_info.company_name, self.state.final_report)
+            save_execution(
+                self.state.company_info.company_name,
+                Framework.CREW_AI,
+                self.state.final_report,
+                self._execution_metrics(),
+            )
         )
-        print(f"\n Memo saved to: {self.state.final_report_path}")
+        print(f"\n Execution saved to: {self.state.final_report_path}")
     
         return self.state.final_report
+
+    def _execution_metrics(self) -> dict:
+        """Totals over the crews (human approval time is outside the crews, so it is not counted) and the split by crew."""
+        crews = self.state.crews_metrics
+        prompt = sum(c["tokens"]["prompt"] for c in crews)
+        completion = sum(c["tokens"]["completion"] for c in crews)
+        return {
+            "total_time_s": round(sum(c["duration_s"] for c in crews), 2),
+            "llm_calls": sum(c["llm_calls"] for c in crews),
+            "tokens": {"prompt": prompt, "completion": completion, "total": prompt + completion},
+            "crews": crews,
+            "tracing": {"crewai_tracing_enabled": os.getenv("CREWAI_TRACING_ENABLED", "").lower() == "true"},
+        }
     
 def main():
     flow = DueDiligenceFlow(tracing=True, suppress_flow_events=not is_verbose("flow"))

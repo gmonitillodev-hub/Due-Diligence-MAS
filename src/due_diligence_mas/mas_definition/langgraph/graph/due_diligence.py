@@ -15,6 +15,9 @@ from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_na
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from dotenv import load_dotenv
+from due_diligence_mas.mas_definition.constants.common import Framework
+from due_diligence_mas.mas_definition.utils.execution_store import save_execution
+from due_diligence_mas.mas_definition.utils.usage_tracker import UsageTracker
 from langgraph.checkpoint.memory import InMemorySaver
 
 
@@ -90,21 +93,37 @@ class DueDiligence_Graph():
         checkpointer = InMemorySaver()
 
         self.compiled_graph = self.graph_builder.compile(checkpointer=checkpointer)
-        
+
+    def run(self, thread_id: str = "due-diligence") -> dict:
+        """
+        Run the graph to the end, resuming it after every human review, and store the execution
+        (memo and metrics) in the executions folder.
+        """
+        tracker = UsageTracker()
+        config = {"configurable": {"thread_id": thread_id}, "callbacks": [tracker]}
+
+        with tracker.measure():
+            result = self.compiled_graph.invoke(DueDiligence_State(), config)
+
+        # The graph pauses at the human review: the wait is outside measure(), so it is not counted
+        while "__interrupt__" in result:
+            decision = input("Proceed / End > ")
+            with tracker.measure():
+                result = self.compiled_graph.invoke(Command(resume=decision), config)
+
+        if result.get("final_report"):
+            folder = save_execution(
+                result["company_info"].company_name, Framework.LANG_GRAPH, result["final_report"], tracker.metrics()
+            )
+            print(f"\n Execution saved to: {folder}")
+
+        return result
+
+
+def main():
+    DueDiligence_Graph().run()
+
 
 if __name__ == "__main__":
-    
-    graph = DueDiligence_Graph()
-    print(graph)
-    
-    print(graph.compiled_graph.get_graph().draw_mermaid())
-    
-    config = {"configurable": {"thread_id": "due-diligence"}}
-    result = graph.compiled_graph.invoke(DueDiligence_State(), config)
+    main()
 
-    # The graph pauses at the human review: resume it with the decision until it ends
-    while "__interrupt__" in result:
-        decision = input("Proceed / End > ")
-        result = graph.compiled_graph.invoke(Command(resume=decision), config)
-
-    print(f"Res -> {result}")

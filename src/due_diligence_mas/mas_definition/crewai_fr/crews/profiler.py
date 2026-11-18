@@ -1,61 +1,29 @@
-from crewai import Agent, Task, Crew, Process
-from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
+from crewai import Process
+
 from due_diligence_mas.mas_definition.agents.analysts.analyst_supervisor import AnalystSupervisor
 from due_diligence_mas.mas_definition.agents.analysts.company_profiler import CompanyProfiler_Agent
-from due_diligence_mas.mas_definition.agents.writer.memo_writer import MemoWriter_Agent
-
 from due_diligence_mas.mas_definition.classes import CompanyInfo
+from due_diligence_mas.mas_definition.crewai_fr.crews.base import BaseCrew
 
-class ProfilerCrew():  
+
+class ProfilerCrew(BaseCrew):
     """
-        Crew that profiles the target company (hierarchical, supervisor as manager).
+    Crew that profiles the target company (hierarchical, supervisor as manager).
     """
-    
+
+    name = "Profiler Crew"
+    process = Process.hierarchical
+
     def __init__(self, company_info: CompanyInfo):
-        
         self.topic = company_info.describe()
-    
-        self.crew_agents: list[Agent] = []
-        self.crew_tasks: list[Task] = []
-            
-        self._initialize_agents()    
-        self._build_tasks()
+        super().__init__()
 
-    def _initialize_agents(self):
-        """ 
-            Initialize crew agents
-        """
-                
-        self.supervisor = AnalystSupervisor()
-        
-        self.profiler = CompanyProfiler_Agent()
-        self.crew_agents.append(self.profiler.get_agent())   
-        
-    def _build_tasks(self):
-        """ 
-            Build tasks for each agent based on the topic and context
-        """
-        
-        self.profiler.build_tasks(self.topic)
-        self.crew_tasks.extend(self.profiler.get_tasks())
-            
-        """ if hasattr(self, 'supervisor'):        
-            self.supervisor.build_tasks(self.topic, context=self.profiler.get_tasks())
-            self.crew_tasks.extend(self.supervisor.get_tasks()) """
-         
+    def _setup(self):
+        self.manager = AnalystSupervisor()
+        self.profiler = self.add(CompanyProfiler_Agent(), self.topic)
+
     def build_crew(self):
-        """
-            Build the crew with the initialized agents and tasks
-        """
-        self.crew = Crew(
-            name="Profiler Crew",
-            agents=self.crew_agents,
-            tasks=self.crew_tasks,
-            process=Process.hierarchical,
-            manager_agent=self.supervisor.get_agent(),
-            tracing=True,
-            verbose=is_verbose("crew")
-        )
+        super().build_crew()
 
         # The manager runs every task and would otherwise use the profiler's tools itself;
         # __dict__ bypasses the validator, which would copy the tools back.
@@ -63,13 +31,7 @@ class ProfilerCrew():
             task.__dict__["tools"] = []
 
     def run_crew(self):
-        """
-            Run the crew to execute the tasks
-        """
-        if not hasattr(self, 'crew'):
-            self.build_crew()
-        
-        result = self.crew.kickoff()
+        result = super().run_crew()
         self._log_executions(result)
         return result
 
@@ -89,13 +51,3 @@ class ProfilerCrew():
             print(f"    Execution {i}: {len(output)} chars")
         print(f"  Final profile (manager): {self._entry_counts(result)}")
         print(f"{'-'*80}\n")
-    
-    def print_crew_info(self):
-        print("Crew Agents:")
-        for agent in self.crew_agents:
-            print(f"- {agent.role}")
-        
-        print("\nCrew Tasks:")
-        for task in self.crew_tasks:
-            print(f"- {task.description}")
-            
