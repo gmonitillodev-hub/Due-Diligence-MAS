@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 # <repo>/doc/executions/executions.db, overridable with EXECUTIONS_DB
-DEFAULT_EXECUTIONS_DB = Path(__file__).resolve().parents[4] / "doc" / "executions" / "executions.db"
+DEFAULT_EXECUTIONS_DB = Path(__file__).resolve().parents[4] / "database" / "executions.db"
 
 
 class ExecutionStatus(str, Enum):
