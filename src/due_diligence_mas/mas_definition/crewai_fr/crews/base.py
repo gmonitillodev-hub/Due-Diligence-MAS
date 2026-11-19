@@ -2,9 +2,11 @@ from typing import Optional
 import time
 
 from crewai import Agent, Crew, Process, Task
+from crewai.llms.base_llm import BaseLLM
 
 from due_diligence_mas.mas_definition.agents.spec import SpecAgent
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
+from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
 
 
 class BaseCrew:
@@ -57,8 +59,21 @@ class BaseCrew:
         self.metrics = self._collect_metrics(time.perf_counter() - start)
         return result
 
+    def _usage_by_model(self) -> dict:
+        """Tokens by model, from the LLM of every agent: the same source of `crew.token_usage`, which is not split by model."""
+        agents = [*self.crew.agents, *([self.crew.manager_agent] if self.crew.manager_agent else [])]
+        models: dict[str, dict[str, int]] = {}
+        for llm in {id(agent.llm): agent.llm for agent in agents}.values():
+            if isinstance(llm, BaseLLM):
+                usage = llm.get_token_usage_summary()
+                totals = models.setdefault(llm.model, {"prompt_tokens": 0, "completion_tokens": 0})
+                totals["prompt_tokens"] += usage.prompt_tokens
+                totals["completion_tokens"] += usage.completion_tokens
+        return models
+
     def _collect_metrics(self, duration_s: float) -> dict:
         usage = self.crew.token_usage
+        models = self._usage_by_model()
         return {
             "name": self.name,
             "duration_s": round(duration_s, 2),
@@ -68,6 +83,8 @@ class BaseCrew:
                 "completion": usage.completion_tokens,
                 "total": usage.total_tokens,
             },
+            "models": models,
+            "cost_usd": summarize_cost(models),
         }
 
     def print_crew_info(self):

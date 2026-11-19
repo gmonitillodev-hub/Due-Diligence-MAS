@@ -9,6 +9,7 @@ from due_diligence_mas.mas_definition.crewai_fr.crews.profiler import ProfilerCr
 from due_diligence_mas.mas_definition.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.mas_definition.constants.common import Framework
 from due_diligence_mas.mas_definition.utils.execution_store import save_execution
+from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.request_handling import print_welcome_message, request_company_info
 from pydantic import BaseModel
@@ -152,10 +153,17 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         crews = self.state.crews_metrics
         prompt = sum(c["tokens"]["prompt"] for c in crews)
         completion = sum(c["tokens"]["completion"] for c in crews)
+        models: dict[str, dict[str, int]] = {}
+        for crew in crews:
+            for model, usage in crew["models"].items():
+                totals = models.setdefault(model, {"prompt_tokens": 0, "completion_tokens": 0})
+                totals["prompt_tokens"] += usage["prompt_tokens"]
+                totals["completion_tokens"] += usage["completion_tokens"]
         return {
             "total_time_s": round(sum(c["duration_s"] for c in crews), 2),
             "llm_calls": sum(c["llm_calls"] for c in crews),
             "tokens": {"prompt": prompt, "completion": completion, "total": prompt + completion},
+            "cost_usd": summarize_cost(models),
             "crews": crews,
             "tracing": {"crewai_tracing_enabled": os.getenv("CREWAI_TRACING_ENABLED", "").lower() == "true"},
         }

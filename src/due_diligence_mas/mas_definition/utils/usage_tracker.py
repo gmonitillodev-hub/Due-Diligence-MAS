@@ -7,6 +7,8 @@ from uuid import UUID
 
 from langchain_core.callbacks import BaseCallbackHandler
 
+from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
+
 
 class UsageTracker(BaseCallbackHandler):
     """
@@ -23,6 +25,8 @@ class UsageTracker(BaseCallbackHandler):
         self.prompt_tokens = 0
         self.completion_tokens = 0
         self.active_s = 0.0
+        # Tokens by model, needed because every model has its own price
+        self.models: dict[str, dict[str, int]] = {}
         self.root_run_ids: list[str] = []
 
     def on_chain_start(self, serialized: Any, inputs: Any, *, run_id: UUID, parent_run_id: Optional[UUID] = None, **kwargs: Any) -> None:
@@ -31,15 +35,22 @@ class UsageTracker(BaseCallbackHandler):
                 self.root_run_ids.append(str(run_id))
 
     def on_llm_end(self, response, **kwargs: Any) -> None:
-        usage = {}
+        usage, model = {}, "unknown"
         try:
-            usage = response.generations[0][0].message.usage_metadata or {}
+            message = response.generations[0][0].message
+            usage = message.usage_metadata or {}
+            model = message.response_metadata.get("model_name") or model
         except (IndexError, AttributeError):
             pass
+        input_tokens, output_tokens = usage.get("input_tokens", 0), usage.get("output_tokens", 0)
         with self._lock:
             self.calls += 1
-            self.prompt_tokens += usage.get("input_tokens", 0)
-            self.completion_tokens += usage.get("output_tokens", 0)
+            self.prompt_tokens += input_tokens
+            self.completion_tokens += output_tokens
+            totals = self.models.setdefault(model, {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0})
+            totals["calls"] += 1
+            totals["prompt_tokens"] += input_tokens
+            totals["completion_tokens"] += output_tokens
 
     @contextmanager
     def measure(self):
@@ -58,6 +69,7 @@ class UsageTracker(BaseCallbackHandler):
                 "prompt_tokens": self.prompt_tokens,
                 "completion_tokens": self.completion_tokens,
                 "active_s": self.active_s,
+                "models": {model: dict(totals) for model, totals in self.models.items()},
                 "root_run_ids": list(self.root_run_ids),
             }
 
@@ -68,6 +80,7 @@ class UsageTracker(BaseCallbackHandler):
         tracker.prompt_tokens = snapshot.get("prompt_tokens", 0)
         tracker.completion_tokens = snapshot.get("completion_tokens", 0)
         tracker.active_s = snapshot.get("active_s", 0.0)
+        tracker.models = {model: dict(totals) for model, totals in snapshot.get("models", {}).items()}
         tracker.root_run_ids = list(snapshot.get("root_run_ids", []))
         return tracker
 
@@ -81,6 +94,7 @@ class UsageTracker(BaseCallbackHandler):
                 "completion": snap["completion_tokens"],
                 "total": snap["prompt_tokens"] + snap["completion_tokens"],
             },
+            "cost_usd": summarize_cost(snap["models"]),
             "tracing": {
                 "langsmith_enabled": os.getenv("LANGSMITH_TRACING", "").lower() == "true",
                 "langsmith_project": os.getenv("LANGSMITH_PROJECT"),

@@ -1,3 +1,8 @@
+import sqlite3
+import uuid
+from due_diligence_mas.mas_definition.classes import company as company_classes
+from due_diligence_mas.mas_definition.classes.company import CompanyInfo
+from due_diligence_mas.mas_definition.langgraph.classes import shared_state
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.langgraph import (
     ANALYSIS_AGGREGATOR_NODE, ANALYST_AGENTS, DEBATE_FORMATTER_NODE, DEBATE_JUDGE_NODE, ENABLED_ANALYST_AGENTS, FAN_OUT_NODE, HUMAN_REVIEW_NODE,
@@ -17,8 +22,13 @@ from langgraph.types import Command
 from dotenv import load_dotenv
 from due_diligence_mas.mas_definition.constants.common import Framework
 from due_diligence_mas.mas_definition.utils.execution_store import save_execution
+from due_diligence_mas.mas_definition.utils.execution_db import (
+    ExecutionStatus, create_execution, db_path, delete_tracker, get_execution, load_tracker, save_tracker, update_execution,
+)
 from due_diligence_mas.mas_definition.utils.usage_tracker import UsageTracker
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+from langgraph.checkpoint.sqlite import SqliteSaver
+from pydantic import BaseModel
 
 
 # Agent node functions, by agent
@@ -31,6 +41,20 @@ AGENT_NODES = {
     AgentName.RISK_ANALYST: risk_analyst_node,
     AgentName.DEBATE_JUDGE: debate_judge_node,
 }
+
+
+def _pydantic_models(*modules) -> list[tuple[str, str]]:
+    """(module, class) of the pydantic models defined in the modules: the types allowed in the checkpoints."""
+    return [
+        (module.__name__, name)
+        for module in modules
+        for name, cls in vars(module).items()
+        if isinstance(cls, type) and issubclass(cls, BaseModel) and cls.__module__ == module.__name__
+    ]
+
+
+# Types stored in the checkpoints; any other type is blocked when loading the state
+STATE_MODELS = _pydantic_models(company_classes, shared_state)
 
 
 class DueDiligence_Graph():
@@ -90,40 +114,108 @@ class DueDiligence_Graph():
         
     def _compile_grap(self):
         
-        checkpointer = InMemorySaver()
+        # State checkpoints share the executions db, so a paused execution survives a restart
+        serializer = JsonPlusSerializer(allowed_msgpack_modules=STATE_MODELS)
+        checkpointer = SqliteSaver(sqlite3.connect(db_path(), check_same_thread=False), serde=serializer)
 
         self.compiled_graph = self.graph_builder.compile(checkpointer=checkpointer)
 
-    def run(self, thread_id: str = "due-diligence") -> dict:
-        """
-        Run the graph to the end, resuming it after every human review, and store the execution
-        (memo and metrics) in the executions folder.
-        """
-        tracker = UsageTracker()
+    def run(self, company_info: CompanyInfo = None, thread_id: str = None) -> dict:
+        """Start the graph: it runs until the human review (interrupt) or the end."""
+        if thread_id and self._check_status(thread_id) is not None:
+            raise ValueError("Ongoing or completed execution.")
+        create_execution(thread_id, Framework.LANG_GRAPH.value, company_info.company_name if company_info else None)
+
+        return self._execute(DueDiligence_State(company_info=company_info), thread_id, UsageTracker())
+
+    def resume(self, decision, thread_id: str) -> dict:       
+        """Resume the graph after the human review with the decision (Proceed / End)."""
+        
+        if self._check_status(thread_id, ExecutionStatus.AWAITING_REVIEW.value) == False:
+            raise ValueError("The execution is not interrupted")
+        
+        snapshot = load_tracker(thread_id)
+        tracker = UsageTracker.restore(snapshot) if snapshot else UsageTracker()
+        update_execution(thread_id, status=ExecutionStatus.RUNNING, pending_review=None)
+
+        return self._execute(Command(resume=decision), thread_id, tracker)
+
+    def _execute(self, graph_input, thread_id: str, tracker: UsageTracker) -> dict:
+        """Stream the graph keeping the execution row up to date, then close it as awaiting review or completed."""
         config = {"configurable": {"thread_id": thread_id}, "callbacks": [tracker]}
+        interrupt_payload = None
 
-        with tracker.measure():
-            result = self.compiled_graph.invoke(DueDiligence_State(), config)
-
-        # The graph pauses at the human review: the wait is outside measure(), so it is not counted
-        while "__interrupt__" in result:
-            decision = input("Proceed / End > ")
+        try:
+            # The human wait between run() and resume() is outside measure(), so it is not counted
             with tracker.measure():
-                result = self.compiled_graph.invoke(Command(resume=decision), config)
+                for chunk in self.compiled_graph.stream(graph_input, config, stream_mode="updates"):
+                    for node, update in chunk.items():
+                        if node == "__interrupt__":
+                            interrupt_payload = update[0].value
+                        else:
+                            update_execution(thread_id, current_node=node)
 
-        if result.get("final_report"):
-            folder = save_execution(
-                result["company_info"].company_name, Framework.LANG_GRAPH, result["final_report"], tracker.metrics()
-            )
-            print(f"\n Execution saved to: {folder}")
+            state = self.compiled_graph.get_state(config).values
+            company = state["company_info"].company_name if state.get("company_info") else None
 
-        return result
+            if interrupt_payload is not None:
+                return self._pause(thread_id, tracker, company, interrupt_payload)
+            return self._complete(thread_id, tracker, company, state.get("final_report"))
+        except Exception:
+            update_execution(thread_id, status=ExecutionStatus.FAILED, metrics=tracker.metrics())
+            raise
 
+    def _pause(self, thread_id: str, tracker: UsageTracker, company: str, interrupt_payload: dict) -> dict:
+        """Waiting for the human review: keep the usage totals for the resume."""
+        save_tracker(thread_id, tracker.snapshot())
+        update_execution(
+            thread_id, 
+            status=ExecutionStatus.AWAITING_REVIEW, 
+            current_node=HUMAN_REVIEW_NODE, 
+            company_name=company,
+            metrics=tracker.metrics(), 
+            pending_review=interrupt_payload,
+        )
+        return {"sessionId": thread_id, "status": ExecutionStatus.AWAITING_REVIEW.value, "pending_review": interrupt_payload}
+
+    def _complete(self, thread_id: str, tracker: UsageTracker, company: str, final_report: str) -> dict:
+        """Store the memo and the metrics (files and db row)."""
+        fields = {"status": ExecutionStatus.COMPLETED, "current_node": None, "company_name": company, "metrics": tracker.metrics()}
+        outcome = {"sessionId": thread_id, "status": ExecutionStatus.COMPLETED.value, "final_report": final_report}
+        if final_report:
+            folder = save_execution(company, Framework.LANG_GRAPH, final_report, tracker.metrics())
+            outcome["execution_folder"] = str(folder)
+            fields.update(memo_markdown=final_report, memo_file_path=str(folder / "memo.md"))
+
+        update_execution(thread_id, **fields)
+        delete_tracker(thread_id)
+        return outcome
+
+    @staticmethod
+    def _check_status(thread_id: str, expected_status: str = None) -> bool | None:
+        """ 
+            Check existance and status of an execution
+            
+            Returns:
+                None if the execution doesn't exists
+                True if the status is correct
+                False if the status is wrong
+        """
+        execution = get_execution(thread_id)
+        if execution is None:
+            return None
+        else:
+            return True if execution["status"] == expected_status else False
 
 def main():
-    DueDiligence_Graph().run()
+    thread_id = str(uuid.uuid4())
+    graph = DueDiligence_Graph()
+    outcome = graph.run(thread_id=thread_id)
+    while outcome["status"] == ExecutionStatus.AWAITING_REVIEW.value:
+        outcome = graph.resume(input("Proceed / End > "), thread_id)
+    if "execution_folder" in outcome:
+        print(f"\n Execution saved to: {outcome['execution_folder']}")
 
 
 if __name__ == "__main__":
     main()
-

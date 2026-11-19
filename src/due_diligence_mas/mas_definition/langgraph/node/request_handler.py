@@ -4,6 +4,9 @@ from due_diligence_mas.mas_definition.utils.request_handling import print_welcom
 def request_handler_node(state: DueDiligence_State):
     
     print_welcome_message()
-    company_info = request_company_info()
+    
+    company_info = state.company_info
+    if company_info is None:
+        company_info = request_company_info()
     
     return {"company_info": company_info}

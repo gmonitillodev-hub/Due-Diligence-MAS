@@ -4,7 +4,7 @@ from typing import Literal
 
 LOG_DIR = Path("log")
 
-LogType = Literal["agent", "tools", "rag"]
+LogType = Literal["lg_api_gateway", "ca_api_gateway", "crew", "node"]
 
 
 def setup_logger(log_type: LogType, enable_console=False) -> logging.Logger:
