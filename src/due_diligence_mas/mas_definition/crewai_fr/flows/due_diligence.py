@@ -12,6 +12,7 @@ from due_diligence_mas.mas_definition.utils.execution_store import save_executio
 from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.request_handling import print_welcome_message, request_company_info
+from due_diligence_mas.utils.logger import log_crew
 from pydantic import BaseModel
 
 from typing import Optional
@@ -42,6 +43,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         print_welcome_message()
         
         self.state.company_info = request_company_info()
+        log_crew("flow", "initialized", company=self.state.company_info.company_name)
     
         return self.state.company_info
     
@@ -52,6 +54,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         """
         
         print(f"\n  Profiling the target company: {self.state.company_info.company_name}...\n")
+        log_crew("flow", "profile_company")
                 
         analyst_crew = ProfilerCrew(company_info=self.state.company_info)
                     
@@ -69,6 +72,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         Analyze the target company.
         """
         print(f"\n  Analyzing the target company: {self.state.company_info.company_name}...\n")
+        log_crew("flow", "analyze_company")
         
         analyst_crew = AnalystCrew(
             company=ProfiledCompany(
@@ -99,12 +103,14 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         
         is_approved = True if input(f"\n    Can I proceed with the debate phase (y/n) ? ") == "y" else False
         
+        log_crew("flow", "human_approval", decision="debate" if is_approved else "final_report")
         return "debate" if is_approved else "final_report"
     
     @listen("debate")
     def run_debate(self):
         print(f"\n{'-'*80}")
         print(f"    Running debate crew...")
+        log_crew("flow", "run_debate")
         
         debate_crew = DebateCrew(
                 args={
@@ -122,6 +128,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     @listen(or_("final_report", run_debate))
     def generate_final_report(self):
         print(f"\n Due diligence stopped ...")
+        log_crew("flow", "generate_final_report")
         
         if not self.state.analysis_results:
             raise ValueError("Analysis not produced")
@@ -145,6 +152,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             )
         )
         print(f"\n Execution saved to: {self.state.final_report_path}")
+        log_crew("flow", "completed", execution_folder=self.state.final_report_path)
     
         return self.state.final_report
 

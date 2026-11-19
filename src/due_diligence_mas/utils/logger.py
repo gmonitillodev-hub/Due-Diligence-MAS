@@ -1,4 +1,5 @@
 import logging
+import threading
 from pathlib import Path
 from typing import Literal
 
@@ -37,3 +38,18 @@ def setup_logger(log_type: LogType, enable_console=False) -> logging.Logger:
         logger.addHandler(console_handler)
 
     return logger
+
+
+def _log_event(log_type: LogType, source: str, status: str, details: dict):
+    extra = " | ".join(f"{k}={v}" for k, v in details.items())
+    setup_logger(log_type).info(f"[{source}] [thread={threading.current_thread().name}] {status}" + (f" | {extra}" if extra else ""))
+
+
+def log_node(node: str, status: str, **details):
+    """Log a LangGraph node status line with its thread to log/node, to check that the fan-out branches run in parallel."""
+    _log_event("node", node, status, details)
+
+
+def log_crew(crew: str, status: str, **details):
+    """Log a CrewAI crew or flow step status line to log/crew."""
+    _log_event("crew", crew, status, details)

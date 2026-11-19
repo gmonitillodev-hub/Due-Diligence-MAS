@@ -10,7 +10,7 @@ from due_diligence_mas.mas_definition.utils.agent_names import get_agent_node_na
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State
 from langgraph.types import Send
 import time
-from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
+from due_diligence_mas.utils.logger import log_node as _log
 
 
 def analyst_fan_out_node(state: DueDiligence_State):

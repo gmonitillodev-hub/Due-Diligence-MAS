@@ -4,7 +4,7 @@ from due_diligence_mas.mas_definition.classes.company import AnalysisReview, Com
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.langgraph import DEBATE_FORMATTER_NODE, FAN_OUT_NODE, HUMAN_REVIEW_NODE, MAX_PROFILE_REVISIONS, OPPORTUNITY_ANALYST_NODE, PROFILER_NODE, SUPERVISOR_NODE, skip_debate_formatter
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State, SupervisionState
-from due_diligence_mas.mas_definition.langgraph.node.node_log import log_node as _log
+from due_diligence_mas.utils.logger import log_node as _log
 from due_diligence_mas.mas_definition.providers.llm_provider import LLM_PROVIDER
 from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
 

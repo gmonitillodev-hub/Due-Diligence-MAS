@@ -1,8 +1,17 @@
 # Startup Due Diligence MAS — Architecture
 
-Status: working draft · Updated: 2026-11-15
+Status: working draft · Updated: 2026-11-19
 
-Related documents: [Overview](due_diligence_overview.md) · [Open Points](due_diligence_open_points.md)
+Related documents: [Overview](due_diligence_overview.md) · [Open Points](due_diligence_open_points.md) · [Benchmark](due_diligence_benchmark_registry.md) · [State, persistence and observability](due_diligence_runtime.md)
+
+## Shared Agent Architecture
+
+Each agent is defined in a concrete class that inherits from `BaseAgent`, which provides the shared methods. The concrete class manages the agent's description and task instructions. Their text is defined in shared constants so CrewAI and LangGraph use the same definitions. A framework-specific adapter maps those definitions into the corresponding runtime inputs.
+
+| Shared definition | CrewAI adapter | LangGraph adapter |
+| --- | --- | --- |
+| Agent description | Agent description and backstory | System prompt |
+| Task instructions | CrewAI task | Human message |
 
 ## CrewAI — Version 1
 
@@ -73,13 +82,13 @@ It produces the final synthesis and formatted due diligence memo. This crew does
 
 Profiling is part of the initial Analysis Crew in Version 1 and is extracted into a separate crew in Version 2.
 
-Human-in-the-loop review is implemented through the CrewAI Flow after Analysis and before Debate. It applies only to the CrewAI implementation described here.
+In CrewAI, the Flow handles human review after Analysis and before Debate.
 
 The Flow displays a preview of the analysts' report and asks whether to proceed. The Debate Crew is initialized only when the user chooses to run it.
 
 | User decision | Route | Result |
 | --- | --- | --- |
-| Analysis is sufficient as-is, or evidence is insufficient for a meaningful debate | Export Analysis output; do not run Debate or final Memo Writer | Analysis-only deliverable |
+| Analysis is sufficient as-is, or evidence is insufficient for a meaningful debate | Export the Analysis output | Analysis-only deliverable |
 | A formatted memo is wanted without Debate | Skip Debate; invoke Memo Writer directly | Memo based on profiling and specialist analyses |
 | Debate is useful and supported by sufficient information | Run Debate, then Memo Writer | Memo including debate findings |
 
@@ -87,11 +96,11 @@ The purpose is to let the user inspect the analysis before spending more tokens 
 
 The stage tables show the full path; downstream execution is conditional on this decision.
 
-### Proposed Automation — Not Yet Implemented
+### CrewAI Proposed Automation — Not Yet Implemented
 
 Introduce an information-sufficiency check at the entry to the Debate stage, before running the full Debate Crew. It would score the analysts' output for whether enough evidence exists to support a useful debate.
 
-An illustrative rule is: score above 6/10 permits Debate; otherwise return the analysis-only output. The scoring criteria, threshold and equality case are not finalized. Sufficient evidence permits Debate but does not prove Debate is necessary. How this score interacts with the human decision remains to be defined; see [OP-04](due_diligence_open_points.md#op-04--automated-debate-eligibility-check).
+Under the illustrative rule, a score above 6/10 makes the report eligible for Debate. A score of 6/10 or lower routes to the analysis-only output. Evidence sufficiency determines eligibility. Whether Debate would add value is a separate decision. The rubric, production threshold, placement relative to human review and any override remain open. For the decisions still needed, see [OP-04](due_diligence_open_points.md#op-04--automated-debate-eligibility-check).
 
 ## CrewAI — Version 2
 
@@ -144,7 +153,7 @@ flowchart TD
 
 Profiling retries are bounded by the configured maximum iterations and guided by prompt instructions against repeated requests for the same missing information. The Analysis Crew's aggregation task and the final Memo Writer Crew are separate execution stages. Debate retains the same four-agent sequence as Version 1.
 
-The proposed automated score is intentionally excluded from both current-architecture diagrams because it is not implemented.
+Both flow diagrams show the implemented human review. The proposed automated eligibility check is described above.
 
 ### Profiling Crew
 
@@ -175,4 +184,57 @@ Version 2 changes orchestration to address the observed issues; improvement must
 
 ## LangGraph
 
-Status: TBD. Architecture and implementation details are to be defined; implementation remains to do. No LangGraph diagram is specified at this stage.
+A single graph orchestrates the workflow and reuses the shared agent classes through the LangGraph adapter. The Supervisor is a project-defined node with an explicit router. The application defines the routing rules and target nodes in code. Routing uses those rules and the user's resume decision. The workflow uses neither `create_supervisor` nor LLM-driven selection of the next agent.
+
+| Node or component | Responsibility |
+| --- | --- |
+| Request Handler | Requests the target company information from the user. The graph skips this node when it already has the required input, as with a complete REST request. |
+| Supervisor and router | The router first calls the Profiler. After each pass, the Supervisor reviews the profile and returns missing information and feedback on how to improve the research. The router proceeds to Fan-out when the profile is complete or after three passes in total, including the initial pass. |
+| Profiler | Produces the company profile and uses the Supervisor's feedback on subsequent passes. |
+| Fan-out | Uses `Send` to run the Tech, Commercial and Team analyst nodes in parallel. |
+| Aggregator | Waits for all three specialist analyses. An LLM consolidates them and the company profile into a single analysis. Control then returns to the Supervisor. |
+| Supervisor review and interrupt | The same Supervisor assesses the completeness of the consolidated analysis and returns a score from 1 to 10 and a review summary. Its router triggers an interrupt. The graph pauses while the user reviews and validates the analysis and chooses how to continue. |
+| Memo Writer | Formats the available analysis and findings according to the memo specifications. Both resume paths converge here. |
+
+### Resume after Human Review
+
+| Resume value | Route |
+| --- | --- |
+| `end` | Go directly to Memo Writer and format the consolidated analysis as the final memo. |
+| `proceed` | Run Debate using the [previously documented sequence](#debate-crew--shared-by-both-versions), then pass the findings to Memo Writer. The initial Debate formatting step runs when enabled. |
+
+The score informs human review. The user's resume value selects the route. The SQLite checkpointer allows the graph to resume using the same `thread_id`, including after an application restart when the saved database is available. See [LangGraph Persistence and Resume](due_diligence_runtime.md#langgraph-persistence-and-resume).
+
+### Flow Diagram — Profiling and Analysis
+
+```mermaid
+flowchart TD
+    Start["Start"] --> InputReady{"Required input available?"}
+    InputReady -->|"Yes"| Router["Supervisor router"]
+    InputReady -->|"No"| Handler["Request Handler"]
+    Handler --> Router
+    Router -->|"Initial pass or refinement"| Profiler["Profiler"]
+    Profiler -->|"Company profile"| Supervisor["Supervisor profile review"]
+    Supervisor -->|"Information gaps and research feedback"| Router
+    Router -->|"Complete profile or 3 passes reached"| FanOut["Fan-out via Send"]
+    FanOut --> Tech["Tech analysis"]
+    FanOut --> Commercial["Commercial analysis"]
+    FanOut --> Team["Team analysis"]
+    Tech --> Aggregator["Aggregator"]
+    Commercial --> Aggregator
+    Team --> Aggregator
+```
+
+### Flow Diagram — Review and Memo
+
+```mermaid
+flowchart TD
+    Aggregator["Aggregator"] --> Supervisor["Supervisor completeness review"]
+    Supervisor -->|"Score and review summary"| Router["Supervisor router"]
+    Router --> Interrupt["Interrupt for human review"]
+    Interrupt --> Resume{"User resumes graph"}
+    Resume -->|"end"| Writer["Memo Writer"]
+    Resume -->|"proceed"| Debate["Debate"]
+    Debate --> Writer
+    Writer --> Memo["Formatted memo"]
+```

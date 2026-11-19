@@ -1,5 +1,7 @@
 # Benchmark — Due Diligence Multi-Agent System
 
+Documenti collegati · [Overview](due_diligence_overview.md) · [Architettura](due_diligence_architecture.md) · [Punti aperti](due_diligence_open_points.md) · [Stato, persistenza e osservabilità](due_diligence_runtime.md)
+
 ## Aziende
 
 | Azienda / sito | Descrizione | Stato | Memo prodotto |
@@ -12,10 +14,14 @@
 | Campo | Boom | Inkeep |
 | --- | --- | --- |
 | Eseguita in | CrewAI | CrewAI |
-| Versione | profiler | Non indicata |
+| Variante riportata | profiler | Non indicata |
+| Versione CrewAI | Non indicata | Non indicata |
+| Modello | Non indicato | Non indicato |
 | trace_url | [Trace Boom](https://app.crewai.com/crewai_plus/ephemeral_traces/37eca1e7-2b91-4ddc-a607-59b453df33fe) | [Trace Inkeep](https://app.crewai.com/crewai_plus/ephemeral_traces/ecad1f74-dab6-431a-8c20-ec8ea5d12fdf) |
 | started_at | 2026-11-14T18:54:53.651+00:00 | 2026-11-14T19:13:53.909+00:00 |
 | finished_at | 2026-11-14T19:02:44.250+00:00 | 2026-11-14T19:20:40.255+00:00 |
+
+Le due esecuzioni forniscono una base per la valutazione dei memo. Per confrontare le varianti o i framework, registrare per ogni esecuzione durata totale, token totali e costo monetario totale insieme a versione del framework, modello, percorso scelto dopo Analysis ed eventuali errori. I confronti usano input equivalenti. Per le esecuzioni che si sospendono per la review umana, indicare se la durata riportata include l’attesa della risposta.
 
 ## Valutazione dei memo
 

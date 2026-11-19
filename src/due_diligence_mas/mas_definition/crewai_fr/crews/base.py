@@ -7,6 +7,7 @@ from crewai.llms.base_llm import BaseLLM
 from due_diligence_mas.mas_definition.agents.spec import SpecAgent
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
+from due_diligence_mas.utils.logger import log_crew
 
 
 class BaseCrew:
@@ -54,9 +55,18 @@ class BaseCrew:
     def run_crew(self):
         if not hasattr(self, "crew"):
             self.build_crew()
+        log_crew(self.name, "start", agents=len(self.crew_agents), tasks=len(self.crew_tasks))
         start = time.perf_counter()
-        result = self.crew.kickoff()
+        try:
+            result = self.crew.kickoff()
+        except Exception as e:
+            log_crew(self.name, "failed", elapsed_s=round(time.perf_counter() - start, 2), error=e)
+            raise
         self.metrics = self._collect_metrics(time.perf_counter() - start)
+        log_crew(
+            self.name, "end", elapsed_s=self.metrics["duration_s"], llm_calls=self.metrics["llm_calls"],
+            tokens=self.metrics["tokens"]["total"], cost_usd=self.metrics["cost_usd"]["total"],
+        )
         return result
 
     def _usage_by_model(self) -> dict:

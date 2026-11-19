@@ -101,8 +101,6 @@ async def resume_after_interrupt(
 
         # The graph resumes after the response is sent; follow it with GET /execution
         background_tasks.add_task(_resume_in_background, payload.decision.value, sessionId)
-        # Status is set now so a second /resume cannot be accepted while the first is running
-        update_execution(sessionId, status=ExecutionStatus.RUNNING, pending_review=None)
 
         return {"sessionId": sessionId, "status": "resumed"}
     
