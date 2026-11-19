@@ -1,6 +1,6 @@
 import os
 
-from crewai.flow.flow import Flow, start, listen, router, or_
+from crewai.flow.flow import Flow, start, listen, router, or_, HumanFeedbackPending, HumanFeedbackProvider, human_feedback
 from due_diligence_mas.mas_definition.classes import CompanyInfo, ProfiledCompany, CompanyProfile
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.crewai_fr.crews.analyst import AnalystCrew
@@ -14,8 +14,10 @@ from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.request_handling import print_welcome_message, request_company_info
 from due_diligence_mas.utils.logger import log_crew
 from pydantic import BaseModel
+from crewai.flow.persistence import SQLiteFlowPersistence
 
-from typing import Optional
+
+from typing import Literal, Optional
 
 class DueDiligenceFlow_State(BaseModel):
     
@@ -32,6 +34,14 @@ class DueDiligenceFlow_State(BaseModel):
     debate_results: Optional[str] = None  
     final_report: Optional[str] = None
     final_report_path: Optional[str] = None
+    
+class ReviewDecision(BaseModel):
+    decision: Literal["proceed", "end"]
+
+
+class RestFeedbackProvider(HumanFeedbackProvider):
+    def request_feedback(self, context, flow) -> str:
+        raise HumanFeedbackPending(context=context)
 
 class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     
@@ -44,7 +54,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         
         self.state.company_info = request_company_info()
         log_crew("flow", "initialized", company=self.state.company_info.company_name)
-    
+        
         return self.state.company_info
     
     @listen(initialize_flow)
@@ -93,8 +103,16 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
 
         return self.state.analysis_results
     
-    @router(analyze_company)
-    def human_approval(self):
+    @listen(analyze_company)
+    @human_feedback(     
+          message="Please review the analysis and proceed or end the execution",
+          proivider=RestFeedbackProvider() 
+    )
+    def ask_human_review(self, analysis_results):
+        return analysis_results
+    
+    @router(ask_human_review)
+    def human_decision_router(self):
         
         print(f"{'='*80}")
         print("\n   Here you can evaluate the analysis before proceeding with automatic debate. ")
@@ -176,11 +194,18 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             "tracing": {"crewai_tracing_enabled": os.getenv("CREWAI_TRACING_ENABLED", "").lower() == "true"},
         }
     
-def main():
-    flow = DueDiligenceFlow(tracing=True, suppress_flow_events=not is_verbose("flow"))
-    flow.kickoff()
-
+def run_due_diligence_flow(company_info: CompanyInfo, thread_id: str):
+    """ 
+        One instance per request is needed cause CrewAI is statefull
+    """
+    flow = DueDiligenceFlow(tracing=True, suppress_flow_events=not is_verbose("flow"), persistence=SQLiteFlowPersistence("due_diligence_crewai.db"))
+    return flow.kickoff(inputs={"id": thread_id})
+    
+def resume_due_diligence_flow(decision: str, thread_id: str):
+    
+    flow = DueDiligenceFlow.from_pending(thread_id, persistence=SQLiteFlowPersistence("due_diligence_crewai.db"))
+    return flow.resume(decision)
 
 if __name__ == "__main__":
-    main()
+    run_due_diligence_flow()
 
