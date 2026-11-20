@@ -26,8 +26,8 @@ dependencies = [
 ]
 
 [project.scripts]
-due-diligence = "due_diligence_mas.mas_definition.crewai_fr.flows.due_diligence:main"
 due-diligence-server = "due_diligence_mas.api_gateway.due_diligence_langgraph:init_gateway"
+due-diligence-crewai-server = "due_diligence_mas.api_gateway.due_diligence_crewai:init_gateway"
 
 [tool.poetry]
 packages = [{include = "due_diligence_mas", from = "src"}]

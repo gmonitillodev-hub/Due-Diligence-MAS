@@ -20,10 +20,15 @@ cp .env.example .env   # set LLM provider and tool API keys
 ## Run
 
 ```bash
-poetry run due-diligence
+poetry run due-diligence-crewai-server   # CrewAI REST server, http://127.0.0.1:8100
+poetry run due-diligence-server          # LangGraph REST server, http://127.0.0.1:8000
 ```
 
-The flow prompts for the company details, then asks for approval before the debate phase.
+To run the CrewAI flow from the terminal (it prompts for the company details, then asks for approval before the debate phase):
+
+```bash
+poetry run python -m due_diligence_mas.mas_definition.crewai_fr.flows.due_diligence
+```
 
 ## Layout
 
