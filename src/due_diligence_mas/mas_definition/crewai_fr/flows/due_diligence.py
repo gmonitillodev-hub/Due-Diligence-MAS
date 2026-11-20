@@ -1,11 +1,9 @@
 import os
 
 from crewai.flow import Flow, start, listen, router, or_, HumanFeedbackPending, HumanFeedbackProvider, human_feedback
-from due_diligence_mas.mas_definition.classes import CompanyInfo, ProfiledCompany, CompanyProfile
-from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
+from due_diligence_mas.mas_definition.classes import CompanyInfo
 from due_diligence_mas.mas_definition.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.debate import DebateCrew
-from due_diligence_mas.mas_definition.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.mas_definition.constants.common import Framework
 from due_diligence_mas.mas_definition.utils.execution_db import ExecutionStatus, create_execution, update_execution
@@ -37,9 +35,6 @@ class DueDiligenceFlow_State(BaseModel):
     
     company_info: Optional[CompanyInfo] = None
     
-    # Profiling output
-    profile: Optional[CompanyProfile] = None
-    
     # Results of the analysis and debate
     analysis_results: Optional[str] = None
     # Metrics of every executed crew, in execution order
@@ -67,40 +62,13 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         return self.state.company_info
     
     @listen(initialize_flow)
-    def profile_company(self):
-        """ 
-            Profile the target company.
-        """
-        
-        log_crew("flow", "profile_company")
-                
-        analyst_crew = ProfilerCrew(company_info=self.state.company_info)
-                    
-        report = self._run_crew(analyst_crew)
-        profile = report.pydantic
-        log_crew("flow", "profile_completed", profiled=profile is not None)
-        self.state.profile = profile
-        
-        return profile
-        
-    @listen(profile_company)
     def analyze_company(self):
         """
-        Analyze the target company.
+        Analyze the target company: the Analyst Crew profiles it and coordinates the specialists.
         """
         log_crew("flow", "analyze_company")
         
-        analyst_crew = AnalystCrew(
-            company=ProfiledCompany(
-                company_info=self.state.company_info,
-                company_profile=self.state.profile
-            ),
-            required_agents=[
-                    AgentName.TECH_REVIEWER.value, 
-                    AgentName.COMMERCIAL_ANALYST.value,
-                    AgentName.TEAM_ANALYST.value
-                ]
-            )
+        analyst_crew = AnalystCrew(company_info=self.state.company_info)
             
         report = self._run_crew(analyst_crew)
         self.state.analysis_results = report

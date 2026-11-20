@@ -1,1 +1,17 @@
 2026-11-19 17:55:12,908 - INFO - [flow] [thread=MainThread] x | a=1
+2026-11-20 17:56:28,665 - INFO - [flow] [thread=asyncio_0] initialized | company=miscusi
+2026-11-20 17:56:28,668 - INFO - [flow] [thread=asyncio_0] analyze_company
+2026-11-20 17:56:31,062 - INFO - [Analyst Crew] [thread=asyncio_0] start | agents=5 | tasks=5
+2026-11-20 18:02:04,141 - INFO - [Analyst Crew] [thread=asyncio_0] failed | elapsed_s=333.08 | error=Task execution failed: Executor is already running. Cannot invoke the same executor instance concurrently.
+2026-11-20 18:15:55,825 - INFO - [flow] [thread=asyncio_0] initialized | company=miscusi
+2026-11-20 18:15:55,831 - INFO - [flow] [thread=asyncio_0] analyze_company
+2026-11-20 18:15:57,962 - INFO - [Analyst Crew] [thread=asyncio_0] start | agents=5 | tasks=5
+2026-11-20 18:34:38,112 - INFO - [Analyst Crew] [thread=asyncio_0] end | elapsed_s=1120.15 | llm_calls=108 | tokens=764281 | cost_usd=0.142937
+2026-11-20 18:35:27,664 - INFO - [flow] [thread=asyncio_0] human_approval | decision=debate
+2026-11-20 18:35:27,666 - INFO - [flow] [thread=asyncio_0] run_debate
+2026-11-20 18:35:27,740 - INFO - [Debate Crew] [thread=asyncio_0] start | agents=4 | tasks=4
+2026-11-20 18:36:07,688 - INFO - [Debate Crew] [thread=asyncio_0] end | elapsed_s=39.95 | llm_calls=4 | tokens=8385 | cost_usd=0.002534
+2026-11-20 18:36:07,702 - INFO - [flow] [thread=asyncio_0] generate_final_report
+2026-11-20 18:36:07,737 - INFO - [Memo writer Crew] [thread=asyncio_0] start | agents=1 | tasks=1
+2026-11-20 18:36:27,056 - INFO - [Memo writer Crew] [thread=asyncio_0] end | elapsed_s=19.32 | llm_calls=2 | tokens=6729 | cost_usd=0.001556
+2026-11-20 18:36:27,075 - INFO - [flow] [thread=asyncio_0] completed

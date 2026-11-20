@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CrewAI Version 1 migration - Plan</title>
+  <style>
+    :root { color-scheme: light dark; --fg:#1a1a1a; --bg:#fff; --accent:#0b5cad; --box:#eef4fb; --line:#999; }
+    @media (prefers-color-scheme: dark) { :root { --fg:#eee; --bg:#121212; --accent:#7db7ff; --box:#1d2733; --line:#777; } }
+    body { font: 1rem/1.6 system-ui, sans-serif; color: var(--fg); background: var(--bg); margin: 0; }
+    main, header, nav, footer { max-width: 70ch; margin: auto; padding: 1rem; }
+    a { color: var(--accent); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .skip { position: absolute; left: -999px; } .skip:focus { left: 1rem; top: 1rem; }
+    .summary { background: var(--box); border-left: 6px solid var(--accent); padding: .5rem 1rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid var(--line); padding: .4rem; text-align: left; vertical-align: top; }
+    pre { overflow-x: auto; padding: .5rem; background: var(--box); }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <h1>CrewAI Version 1 migration plan</h1>
+    <p>Source: <code>doc/due_diligence_architecture (1).md</code>, section "CrewAI — Version 1". This branch has Version 1 only. No version switch.</p>
+  </header>
+  <nav aria-label="Table of contents">
+    <ol>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#gap">Gap: code versus doc</a></li>
+      <li><a href="#flow">Target flow</a></li>
+      <li><a href="#phases">Phases</a></li>
+      <li><a href="#risks">Risks</a></li>
+      <li><a href="#verify">Verification</a></li>
+    </ol>
+  </nav>
+  <main id="main">
+    <section id="summary">
+      <h2>Summary</h2>
+      <div class="summary">
+        <p>Replace the Version 2 design (Profiler Crew + sequential Analyst Crew) with one hierarchical <code>AnalystCrew</code>.</p>
+        <p>The crew holds the manager agent, Company Profiler, Tech, Team and Commercial. Debate and Memo Writer crews stay unchanged.</p>
+        <p>OP-01 and OP-02 are known issues. Tests must confirm them with traces. Do not hide them.</p>
+      </div>
+    </section>
+
+    <section id="gap">
+      <h2>Gap: code versus doc</h2>
+      <table>
+        <caption>Differences between current code and Version 1</caption>
+        <thead><tr><th scope="col">Item</th><th scope="col">Current code</th><th scope="col">Target</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Crews</th><td><code>ProfilerCrew</code> + <code>AnalystCrew</code> (sequential)</td><td>One hierarchical <code>AnalystCrew</code></td></tr>
+          <tr><th scope="row">Manager</th><td><code>AnalystSupervisor</code> only in <code>ProfilerCrew</code></td><td>Manager in <code>AnalystCrew</code>: delegates, collects, writes the report</td></tr>
+          <tr><th scope="row">Profile step</th><td><code>profile_company</code> in the Flow; <code>state.profile</code></td><td>Removed. Profiling is a delegated task inside the crew</td></tr>
+          <tr><th scope="row">Aggregation</th><td>Memo Writer agent, <code>aggregation</code> task</td><td>Manager writes the intermediate report</td></tr>
+          <tr><th scope="row">Specialist context</th><td>Explicit task context</td><td>Manager chooses and passes context</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="flow">
+      <h2>Target flow</h2>
+      <figure>
+        <pre class="mermaid">
+flowchart TD
+    Init["initialize_flow"] --> Ana["analyze_company: AnalystCrew"]
+    Ana --> Rev{"human review"}
+    Rev -->|"proceed"| Deb["run_debate"]
+    Rev -->|"end"| Memo["generate_final_report"]
+    Deb --> Memo
+        </pre>
+        <figcaption>Flow with three crews: Analyst, Debate, Memo Writer. The Flow has no profile step.</figcaption>
+      </figure>
+      <details>
+        <summary>Text description</summary>
+        <p>initialize_flow goes to analyze_company. Then human review. Proceed goes to Debate, then Memo Writer. End goes directly to Memo Writer.</p>
+      </details>
+    </section>
+
+    <section id="phases">
+      <h2>Phases</h2>
+      <p>Order: A, then B, then C, then D and E, then F.</p>
+
+      <h3>A. Shared-code guard (no LangGraph regression)</h3>
+      <ul>
+        <li>[ ] LangGraph uses these shared items: <code>CompanyProfiler_Agent</code> (task <code>main</code>, schema <code>CompanyProfile</code>), Tech/Commercial/Team agents, <code>MemoWriter_Agent</code> tasks <code>aggregation</code> and <code>memo</code>, and <code>ProfiledCompany</code>, <code>CompanyProfile</code>, <code>topic_for</code>, <code>profile_topic</code>.</li>
+        <li>[ ] Rule: do not edit or delete any of them. Do not edit text in shared <code>tasks_def</code>.</li>
+        <li>[ ] Only <code>AnalystSupervisor</code> is CrewAI-only. LangGraph has its own supervisor in <code>langgraph/node/supervisor.py</code>. Edit this agent freely.</li>
+        <li>[ ] If a CrewAI-only task text is needed, add a new task key (for example <code>"hierarchical"</code>) to <code>AnalystSupervisor.tasks_def</code>. Do not change existing keys.</li>
+        <li>[ ] Before the work: run existing tests and import-check the LangGraph graph. Save the result as baseline.</li>
+      </ul>
+
+      <h3>B. Rewrite <code>AnalystCrew</code> (CrewAI only)</h3>
+      <ul>
+        <li>[ ] <code>crewai_fr/crews/analyst.py</code>: set <code>process = Process.hierarchical</code> and <code>manager = AnalystSupervisor()</code>.</li>
+        <li>[ ] Constructor takes <code>CompanyInfo</code>. Use <code>company_info.describe()</code> as topic.</li>
+        <li>[ ] <code>_setup</code>: add Profiler, Tech, Commercial, Team with <code>self.add</code>. No explicit task context (manager decides, as in the doc).</li>
+        <li>[ ] Do not change <code>bind_agent</code> in shared agents. Reuse the <code>build_crew</code> pattern of <code>ProfilerCrew</code> to clear task tools for the manager.</li>
+        <li>[ ] Do not call the Memo Writer <code>aggregation</code> task here. The task stays in the shared agent for LangGraph.</li>
+        <li>[ ] Async: set <code>async_execution</code> on the Task objects inside the crew, not in shared definitions.</li>
+        <li>[ ] <code>run_crew</code> returns the report as <code>str</code>.</li>
+      </ul>
+
+      <h3>C. Remove Version 2 code (CrewAI only)</h3>
+      <ul>
+        <li>[ ] Delete <code>crewai_fr/crews/profiler.py</code> (its logging helper may move to the new crew). Only the Flow imports it.</li>
+        <li>[ ] <code>crewai_fr/flows/due_diligence.py</code>: remove <code>profile_company</code> and <code>state.profile</code>. <code>analyze_company</code> listens to <code>initialize_flow</code>.</li>
+        <li>[ ] Remove unused imports in the Flow. Keep <code>classes/company.py</code> and <code>classes/__init__.py</code> unchanged.</li>
+      </ul>
+
+      <h3>D. Memo Writer input</h3>
+      <ul>
+        <li>[ ] Memo Writer receives the manager report, plus debate output when it ran. Check the <code>memo</code> task text. It must not expect a separate profile input.</li>
+      </ul>
+
+      <h3>E. Metrics and tracking</h3>
+      <ul>
+        <li>[ ] <code>crews_metrics</code> must show 3 crews. Check <code>track_crew</code> and <code>current_crew</code> names.</li>
+        <li>[ ] Count manager LLM tokens (<code>_usage_by_model</code> already reads <code>manager_agent</code>).</li>
+        <li>[ ] Count delegations and repeated retrieval calls per run. This data confirms OP-01 and OP-02.</li>
+      </ul>
+
+      <h3>F. Tests and docs</h3>
+      <ul>
+        <li>[ ] Unit tests in <code>tests/</code>: crew is hierarchical; it has a manager and 4 agents; Flow has no profile step.</li>
+        <li>[ ] Regression: LangGraph graph builds and tests pass. <code>git diff --stat</code> shows no change in shared <code>agents/</code> (except <code>analyst_supervisor.py</code>) and <code>classes/</code>.</li>
+        <li>[ ] Real run on one company. Save traces.</li></li>
+        <li>[ ] OP-01: log rejected or overlapping delegations. Record model id and CrewAI version (missing in the open points doc).</li>
+        <li>[ ] OP-02: compare what the manager passes to each specialist with the full upstream output. Count repeated tool calls.</li>
+        <li>[ ] Update <code>doc/due_diligence_open_points (2).md</code> with the results. Update the README if it names the Profiler Crew.</li>
+      </ul>
+    </section>
+
+    <section id="risks">
+      <h2>Risks</h2>
+      <table>
+        <caption>Risks and mitigations</caption>
+        <thead><tr><th scope="col">Risk</th><th scope="col">Mitigation</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">OP-01: overlapping delegation</th><td>Expected. Log and count it. Keep a sequential run for comparison only.</td></tr>
+          <tr><th scope="row">OP-02: lossy context handoff</th><td>Expected. Trace manager-to-specialist messages. Do not fix with prompts only.</td></tr>
+          <tr><th scope="row">No structured profile</th><td>Report is free markdown. Check API and DB fields that read <code>state.profile</code>.</td></tr>
+          <tr><th scope="row">LangGraph regression through shared definitions</th><td>Phase A rule: no edit to shared tasks, agents or classes. CrewAI-only changes live in crews, Flow and <code>AnalystSupervisor</code>. Check the diff and run LangGraph.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="verify">
+      <h2>Verification</h2>
+      <ol>
+        <li>Run <code>pytest tests/</code>.</li>
+        <li>Run the Flow once. Check 3 crews in metrics.</li>
+        <li>Run the REST resume path. Check the review pause and resume still work.</li>
+      </ol>
+      <p>Status: plan only. Nothing implemented or run.</p>
+    </section>
+  </main>
+  <footer><p>Generated by Copilot.</p></footer>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</body>
+</html>

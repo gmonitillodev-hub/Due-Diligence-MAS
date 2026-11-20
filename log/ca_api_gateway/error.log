@@ -1,0 +1,1 @@
+2026-11-20 18:02:04,197 - ERROR - Background run failed (sessionId: 8f59deba-9a19-4134-84d5-5bf5199e5f91): Task execution failed: Executor is already running. Cannot invoke the same executor instance concurrently.

@@ -7,7 +7,8 @@ class AgentName(Enum):
         TECH_REVIEWER = "Tech Reviewer"
         COMMERCIAL_ANALYST = "Commercial Analyst"
         COMPANY_PROFILER = "Company Profiler"
-        ANALYST_SUPERVISOR = "Analyst Supervisor"
+        ANALYST_SUPERVISOR = "Analyst Supervisor"  # LangGraph only: reviews, never delegates
+        ANALYSIS_MANAGER = "Analysis Manager"  # CrewAI only: manager of the hierarchical Analyst Crew
         TEAM_ANALYST = "Team Analyst"
         
         # Debate agents
@@ -157,48 +158,69 @@ AGENTS = {
         ],
         "limits": {"max_iter": 6, "max_execution_time": 420},
     },
+    # Judge of the LangGraph workflow (profile quality gate and analysis completeness score). It never delegates:
+    # the CrewAI hierarchical crew is managed by the "Analysis Manager".
     "Analyst Supervisor": {
         "name": "Analyst Supervisor",
-        "role": "Coordinates the analysis and guarantees the quality and completeness of the company profile.",
+        "role": "Reviews the quality of the company profile and the completeness of the analysis.",
         "description": (
-            "You delegate each task to the specialist named in it and you are the quality gate of the "
-            "company profile, the baseline every other specialist builds on. You are also the custodian of "
-            "the information gathered: every fact returned by any delegation, the earliest ones included, "
-            "stays in your final answer. A later delegation completes the earlier results, it never replaces them."
+            "You are the quality gate of a startup due diligence. You review the work produced by others: "
+            "you do not research, delegate or write analyses. You judge the company profile, the baseline "
+            "every specialist builds on, and the completeness of the consolidated analysis."
         ),
         "goal": (
-            "Get a complete, source-backed company profile and one report from each specialist, "
-            "cumulating the output of every delegation without losing any previously obtained information."
+            "Make sure the company profile is complete and source-backed, and give an objective completeness score "
+            "of the consolidated analysis, without losing any information obtained."
         ),
         "responsibilities": [
-            "delegate each task once to the specialist named in it, passing the task text unchanged",
-            "keep a running record of everything the coworkers return: after each delegation, "
-            "add the new facts to the record and never overwrite, shorten or drop facts already in it",
-            "build the final answer from the whole record, every entry verbatim with its source, access date and status, "
-            "and not from the last delegation alone",
             "check the company profile: confirmed official website, what the company does, sector, "
             "headquarters and founding year, customers or market, GitHub/LinkedIn/team page URLs if they exist, "
             "and a source for every fact",
-            "if the profile lacks any of these items, delegate to the profiling coworker once more, "
-            "asking only for the missing items and listing what is already found; then proceed anyway",
-            "keep track of every topic already requested: a topic requested without success is marked as "
-            "'missing (not found after search)' and is never requested again, "
-            "except in the single follow-up request, where it may be retried at most once",
-            "add to the profile a 'Gaps' list of what is still missing for each specialist",
-            "if a specialist report is incomplete, record the gaps as missing instead of delegating again",
+            "when the profile is incomplete, report concrete issues and actionable feedback only for what is missing",
+            "never report again an issue that was already requested: a topic requested without success is marked as "
+            "'missing (not found after search)'",
+            "merge profile iterations into one profile, keeping every fact of every iteration",
+            "score the completeness of the consolidated analysis and list the concrete missing items",
             "resolve conflicting findings: primary source over secondary, more recent over older, "
             "verified over claimed over to-be-confirmed; if undecidable, keep both and mark as to be confirmed, with a rationale",
         ],
         "constraints": [
-            "Never lose information obtained in a previous delegation: the final answer must contain it in full.",
-            "Never summarize, merge away or rephrase the coworkers' facts; only remove exact duplicates.",
-            "Never perform research or add facts that the coworkers did not provide.",
+            "Never lose information obtained in a previous iteration: the merged result must contain it in full.",
+            "Never summarize, merge away or rephrase facts; only remove exact duplicates.",
+            "Never perform research or add facts that were not provided.",
             "Never invent information: list it as missing.",
-            "Delegate or ask to coworkers at most twice in total (initial request plus one follow-up).",
-            "Never delegate a topic that was already requested and not found, unless it is the single follow-up; "
-            "after the follow-up, whatever is still not found stays marked as missing.",
         ],
         "limits": {"max_iter": 8, "max_execution_time": 1500},
+    },
+    # Manager of the CrewAI hierarchical Analyst Crew. It only delegates: it has no task and writes no report
+    # (the Memo Writer does).
+    "Analysis Manager": {
+        "name": "Analysis Manager",
+        "role": "Coordinates the company profiler, the specialists and the report writer by delegating each task.",
+        "description": (
+            "You coordinate the analysis stage of a startup due diligence. You do not research and you do not "
+            "write analyses: you delegate each task to the coworker whose role fits it and return what they produce."
+        ),
+        "goal": (
+            "Get the company profile, one report from each specialist and the consolidated analysis from the "
+            "report writer, without losing any information obtained."
+        ),
+        "responsibilities": [
+            "delegate each task to the coworker whose role fits it, passing the full task text and the full output "
+            "of the tasks it depends on, unchanged and never summarized",
+            "delegate the final aggregation to the report writer with the complete outputs of the profiler and of every specialist",
+            "return the output of each coworker unchanged",
+            "never repeat a request for information a coworker already reported as not found",
+        ],
+        "constraints": [
+            "Never lose information obtained from a delegation.",
+            "Never summarize, merge away or rephrase the coworkers' facts.",
+            "Never perform research or add facts that the coworkers did not provide.",
+            "Never write the report yourself.",
+            "Delegate to the Company Profiler at most 4 times in total, the initial request included: "
+            "ask only for the missing items, listing what is already found, and never request again an item already reported as not found.",
+        ],
+        "limits": {"max_iter": 12, "max_execution_time": 1500},
     },
     "Team Analyst": {
         "name": "Team Analyst",
