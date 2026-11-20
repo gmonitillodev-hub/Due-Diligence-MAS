@@ -1,6 +1,5 @@
 from due_diligence_mas.mas_definition.classes.company import CompanyInfo
 from due_diligence_mas.mas_definition.crewai_fr.flows.due_diligence import resume_due_diligence_flow, run_due_diligence_flow
-from due_diligence_mas.mas_definition.langgraph.graph.due_diligence import DueDiligence_Graph
 from due_diligence_mas.mas_definition.utils.execution_db import ExecutionStatus, get_execution, update_execution
 from due_diligence_mas.utils.session_manager import create_session_id
 from fastapi.responses import PlainTextResponse
@@ -48,7 +47,7 @@ def _run_in_background(company_info: CompanyInfo, session_id: str):
 
 def _resume_in_background(decision: str, session_id: str):
     try:
-        resume_due_diligence_flow.resume(decision, session_id)
+        resume_due_diligence_flow(decision, session_id)
     except Exception as e:
         logger.error(f"Background resume failed (sessionId: {session_id}): {e}")
 

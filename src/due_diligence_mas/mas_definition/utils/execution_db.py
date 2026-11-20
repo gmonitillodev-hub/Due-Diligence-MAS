@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS executions (
     current_crew      TEXT,              -- CrewAI only, NULL for LangGraph
     metrics           TEXT,              -- JSON: time, LLM calls, tokens, tracing
     memo_markdown     TEXT,              -- final memo
-    memo_file_path    TEXT,              -- memo.md saved in the execution folder
     pending_review    TEXT,              -- JSON: analysis preview and options shown to the human while paused
     created_at        TEXT NOT NULL,
     updated_at        TEXT NOT NULL
@@ -52,11 +51,11 @@ CREATE TABLE IF NOT EXISTS trackers (
 # Columns holding JSON: dicts are dumped on write and parsed on read
 JSON_COLUMNS = ("metrics", "pending_review")
 UPDATABLE_COLUMNS = {
-    "company_name", "status", "current_node", "current_crew", "metrics", "memo_markdown", "memo_file_path", "pending_review",
+    "company_name", "status", "current_node", "current_crew", "metrics", "memo_markdown", "pending_review",
 }
 
 # Columns and status values of the first version of the table
-LEGACY_COLUMNS = {"company": "company_name", "memo": "memo_markdown", "memo_path": "memo_file_path", "interrupt": "pending_review"}
+LEGACY_COLUMNS = {"company": "company_name", "memo": "memo_markdown", "interrupt": "pending_review"}
 
 
 def db_path() -> Path:

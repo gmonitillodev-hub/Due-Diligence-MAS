@@ -1,6 +1,6 @@
 import os
 
-from crewai.flow.flow import Flow, start, listen, router, or_, HumanFeedbackPending, HumanFeedbackProvider, human_feedback
+from crewai.flow import Flow, start, listen, router, or_, HumanFeedbackPending, HumanFeedbackProvider, human_feedback
 from due_diligence_mas.mas_definition.classes import CompanyInfo, ProfiledCompany, CompanyProfile
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.crewai_fr.crews.analyst import AnalystCrew
@@ -8,16 +8,30 @@ from due_diligence_mas.mas_definition.crewai_fr.crews.debate import DebateCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.profiler import ProfilerCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.mas_definition.constants.common import Framework
-from due_diligence_mas.mas_definition.utils.execution_store import save_execution
+from due_diligence_mas.mas_definition.utils.execution_db import ExecutionStatus, create_execution, update_execution
 from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
-from due_diligence_mas.mas_definition.utils.request_handling import print_welcome_message, request_company_info
+from due_diligence_mas.mas_definition.utils.request_handling import request_company_info
 from due_diligence_mas.utils.logger import log_crew
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from crewai.flow.persistence import SQLiteFlowPersistence
 
 
-from typing import Literal, Optional
+from functools import wraps
+from typing import Optional
+
+FLOW_DB_PATH = os.getenv("CREWAI_FLOW_DB_PATH", "due_diligence_crewai.db")
+APPROVAL_ANSWERS = {"y", "yes", "proceed", "approve", "approved"}
+
+def track_crew(run_crew):
+    """Store the crew in progress on the execution row, then the metrics when it ends."""
+    @wraps(run_crew)
+    def wrapper(self, crew):
+        update_execution(self.state.id, current_crew=crew.name)
+        result = run_crew(self, crew)
+        update_execution(self.state.id, metrics=self._execution_metrics())
+        return result
+    return wrapper
 
 class DueDiligenceFlow_State(BaseModel):
     
@@ -29,16 +43,11 @@ class DueDiligenceFlow_State(BaseModel):
     # Results of the analysis and debate
     analysis_results: Optional[str] = None
     # Metrics of every executed crew, in execution order
-    crews_metrics: list[dict] = []
+    crews_metrics: list[dict] = Field(default_factory=list)
     
     debate_results: Optional[str] = None  
     final_report: Optional[str] = None
-    final_report_path: Optional[str] = None
     
-class ReviewDecision(BaseModel):
-    decision: Literal["proceed", "end"]
-
-
 class RestFeedbackProvider(HumanFeedbackProvider):
     def request_feedback(self, context, flow) -> str:
         raise HumanFeedbackPending(context=context)
@@ -50,9 +59,9 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         """
         Initialize the due diligence flow.
         """
-        print_welcome_message()
-        
-        self.state.company_info = request_company_info()
+        if self.state.company_info is None:
+            self.state.company_info = request_company_info()
+            
         log_crew("flow", "initialized", company=self.state.company_info.company_name)
         
         return self.state.company_info
@@ -63,15 +72,13 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             Profile the target company.
         """
         
-        print(f"\n  Profiling the target company: {self.state.company_info.company_name}...\n")
         log_crew("flow", "profile_company")
                 
         analyst_crew = ProfilerCrew(company_info=self.state.company_info)
                     
-        report = analyst_crew.run_crew()
-        self.state.crews_metrics.append(analyst_crew.metrics)
+        report = self._run_crew(analyst_crew)
         profile = report.pydantic
-        print(f"Report > {profile.model_dump_json(indent=2) if profile else report.raw}")
+        log_crew("flow", "profile_completed", profiled=profile is not None)
         self.state.profile = profile
         
         return profile
@@ -81,7 +88,6 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         """
         Analyze the target company.
         """
-        print(f"\n  Analyzing the target company: {self.state.company_info.company_name}...\n")
         log_crew("flow", "analyze_company")
         
         analyst_crew = AnalystCrew(
@@ -96,9 +102,7 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
                 ]
             )
             
-        report = analyst_crew.run_crew()
-        self.state.crews_metrics.append(analyst_crew.metrics)
-
+        report = self._run_crew(analyst_crew)
         self.state.analysis_results = report
 
         return self.state.analysis_results
@@ -106,28 +110,21 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
     @listen(analyze_company)
     @human_feedback(     
           message="Please review the analysis and proceed or end the execution",
-          proivider=RestFeedbackProvider() 
+          provider=RestFeedbackProvider() 
     )
     def ask_human_review(self, analysis_results):
         return analysis_results
     
     @router(ask_human_review)
     def human_decision_router(self):
-        
-        print(f"{'='*80}")
-        print("\n   Here you can evaluate the analysis before proceeding with automatic debate. ")
-        print("\n   Analysis produced: \n")
-        print(f"         {self.state.analysis_results}")
-        
-        is_approved = True if input(f"\n    Can I proceed with the debate phase (y/n) ? ") == "y" else False
-        
+        feedback = self.last_human_feedback.feedback if self.last_human_feedback else ""
+        is_approved = feedback.strip().lower() in APPROVAL_ANSWERS
+
         log_crew("flow", "human_approval", decision="debate" if is_approved else "final_report")
         return "debate" if is_approved else "final_report"
     
     @listen("debate")
     def run_debate(self):
-        print(f"\n{'-'*80}")
-        print(f"    Running debate crew...")
         log_crew("flow", "run_debate")
         
         debate_crew = DebateCrew(
@@ -136,16 +133,13 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
                 }
             )
             
-        print("\n   Running the crew...")
-        result = debate_crew.run_crew()
-        self.state.crews_metrics.append(debate_crew.metrics)                
+        result = self._run_crew(debate_crew)
         self.state.debate_results = result.raw
         
         return result
     
     @listen(or_("final_report", run_debate))
     def generate_final_report(self):
-        print(f"\n Due diligence stopped ...")
         log_crew("flow", "generate_final_report")
         
         if not self.state.analysis_results:
@@ -158,21 +152,25 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             }
         )
           
-        result = memo_crew.run_crew()
-        self.state.crews_metrics.append(memo_crew.metrics)
+        result = self._run_crew(memo_crew)
         self.state.final_report = result.raw
-        self.state.final_report_path = str(
-            save_execution(
-                self.state.company_info.company_name,
-                Framework.CREW_AI,
-                self.state.final_report,
-                self._execution_metrics(),
-            )
+        update_execution(
+            self.state.id,
+            status=ExecutionStatus.COMPLETED,
+            current_node=None,
+            current_crew=None,
+            metrics=self._execution_metrics(),
+            memo_markdown=self.state.final_report,
         )
-        print(f"\n Execution saved to: {self.state.final_report_path}")
-        log_crew("flow", "completed", execution_folder=self.state.final_report_path)
+        log_crew("flow", "completed")
     
         return self.state.final_report
+
+    @track_crew
+    def _run_crew(self, crew):
+        result = crew.run_crew()
+        self.state.crews_metrics.append(crew.metrics)
+        return result
 
     def _execution_metrics(self) -> dict:
         """Totals over the crews (human approval time is outside the crews, so it is not counted) and the split by crew."""
@@ -194,18 +192,46 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
             "tracing": {"crewai_tracing_enabled": os.getenv("CREWAI_TRACING_ENABLED", "").lower() == "true"},
         }
     
+def _close_execution(flow: DueDiligenceFlow, thread_id: str, result):
+    """A paused flow returns HumanFeedbackPending: mark the execution as awaiting review."""
+    if isinstance(result, HumanFeedbackPending):
+        update_execution(
+            thread_id,
+            status=ExecutionStatus.AWAITING_REVIEW,
+            current_node="ask_human_review",
+            current_crew=None,
+            metrics=flow._execution_metrics(),
+            pending_review={"analysis": flow.state.analysis_results, "options": ["proceed", "end"]},
+        )
+    return result
+
 def run_due_diligence_flow(company_info: CompanyInfo, thread_id: str):
     """ 
         One instance per request is needed cause CrewAI is statefull
     """
-    flow = DueDiligenceFlow(tracing=True, suppress_flow_events=not is_verbose("flow"), persistence=SQLiteFlowPersistence("due_diligence_crewai.db"))
-    return flow.kickoff(inputs={"id": thread_id})
+    create_execution(thread_id, Framework.CREW_AI.value, company_info.company_name)
+    flow = DueDiligenceFlow(
+        tracing=os.getenv("CREWAI_TRACING_ENABLED", "").lower() == "true",
+        suppress_flow_events=not is_verbose("flow"),
+        persistence=SQLiteFlowPersistence(FLOW_DB_PATH),
+    )
+    try:
+        result = flow.kickoff(inputs={"id": thread_id, "company_info": company_info})
+    except Exception:
+        update_execution(thread_id, status=ExecutionStatus.FAILED, metrics=flow._execution_metrics())
+        raise
+    return _close_execution(flow, thread_id, result)
     
 def resume_due_diligence_flow(decision: str, thread_id: str):
-    
-    flow = DueDiligenceFlow.from_pending(thread_id, persistence=SQLiteFlowPersistence("due_diligence_crewai.db"))
-    return flow.resume(decision)
+    update_execution(thread_id, status=ExecutionStatus.RUNNING, pending_review=None)
+    flow = DueDiligenceFlow.from_pending(thread_id, persistence=SQLiteFlowPersistence(FLOW_DB_PATH))
+    try:
+        result = flow.resume(decision)
+    except Exception:
+        update_execution(thread_id, status=ExecutionStatus.FAILED, metrics=flow._execution_metrics())
+        raise
+    return _close_execution(flow, thread_id, result)
 
 if __name__ == "__main__":
-    run_due_diligence_flow()
+    run_due_diligence_flow(request_company_info(), "local")
 

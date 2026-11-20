@@ -21,7 +21,6 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from dotenv import load_dotenv
 from due_diligence_mas.mas_definition.constants.common import Framework
-from due_diligence_mas.mas_definition.utils.execution_store import save_execution
 from due_diligence_mas.mas_definition.utils.execution_db import (
     ExecutionStatus, create_execution, db_path, delete_tracker, get_execution, load_tracker, save_tracker, update_execution,
 )
@@ -179,13 +178,11 @@ class DueDiligence_Graph():
         return {"sessionId": thread_id, "status": ExecutionStatus.AWAITING_REVIEW.value, "pending_review": interrupt_payload}
 
     def _complete(self, thread_id: str, tracker: UsageTracker, company: str, final_report: str) -> dict:
-        """Store the memo and the metrics (files and db row)."""
+        """Store the memo and the metrics in the db row."""
         fields = {"status": ExecutionStatus.COMPLETED, "current_node": None, "company_name": company, "metrics": tracker.metrics()}
         outcome = {"sessionId": thread_id, "status": ExecutionStatus.COMPLETED.value, "final_report": final_report}
         if final_report:
-            folder = save_execution(company, Framework.LANG_GRAPH, final_report, tracker.metrics())
-            outcome["execution_folder"] = str(folder)
-            fields.update(memo_markdown=final_report, memo_file_path=str(folder / "memo.md"))
+            fields["memo_markdown"] = final_report
 
         update_execution(thread_id, **fields)
         delete_tracker(thread_id)
@@ -213,8 +210,6 @@ def main():
     outcome = graph.run(thread_id=thread_id)
     while outcome["status"] == ExecutionStatus.AWAITING_REVIEW.value:
         outcome = graph.resume(input("Proceed / End > "), thread_id)
-    if "execution_folder" in outcome:
-        print(f"\n Execution saved to: {outcome['execution_folder']}")
 
 
 if __name__ == "__main__":

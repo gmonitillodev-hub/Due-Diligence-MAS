@@ -150,7 +150,7 @@ def get_session_data(session_id: str):
 def init_gateway():    
     
     host = os.getenv("AGENT_GATEWAY_HOST", "127.0.0.1")
-    port = int(os.getenv("AGENT_GATEWAY_PORT", "8100"))
+    port = int(os.getenv("AGENT_GATEWAY_PORT", "8000"))
 
     try:
         
