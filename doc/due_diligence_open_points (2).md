@@ -17,6 +17,9 @@ These notes record project observations and hypotheses, not independently verifi
 | Token behavior reported | CrewAI rejects the conflicting attempt before another LLM call; that rejected attempt therefore does not add an LLM call in the observed path |
 | Hypothesis | A more capable model might reduce inappropriate delegation attempts; this has not been demonstrated |
 | Missing detail | Exact model identifier and CrewAI version |
+| Reproduction (2026-11-20) | CrewAI 1.15.41, `openai/gpt-4o-mini`, Analyst Crew (hierarchical, 3 async specialist tasks): the crew failed after 333 s with `Task execution failed: Executor is already running. Cannot invoke the same executor instance concurrently.` The flow method `analyze_company` failed with it |
+| Probable cause | In the hierarchical process the manager executes every task, so the async tasks invoke the same manager executor instance in parallel |
+| Switch | `ANALYST_ASYNC=false` runs the specialist tasks sequentially, to compare with the async run |
 
 The token observation applies to the rejected attempt, not to all manager decisions or the overall workflow cost.
 

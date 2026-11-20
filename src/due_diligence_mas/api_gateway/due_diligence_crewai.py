@@ -154,7 +154,7 @@ def init_gateway():
     try:
         
         uvicorn.run(
-            "due_diligence_mas.api_gateway.due_diligence_langgraph:flow_gateway",
+            "due_diligence_mas.api_gateway.due_diligence_crewai:flow_gateway",
             host=host,
             port=port,
             reload=True,
