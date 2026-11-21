@@ -1,4 +1,0 @@
-2026-11-21 12:24:14,908 - INFO - [get_users] [thread=MainThread] done | count=2
-2026-11-21 12:24:53,584 - INFO - [get_users] [thread=MainThread] done | count=2
-2026-11-21 12:25:18,414 - INFO - [create_task] [thread=MainThread] start | assignee=cd9a5f5e-e0c3-45d0-98a0-026b1e3cf619 | priority=high
-2026-11-21 12:25:18,419 - INFO - [create_task] [thread=MainThread] saved | task_id=0dd5ee14-9a49-4e5f-9093-79d8ae5af977 | path=/home/gmonitillo/ProfessionAI/Due-Diligence-MAS/src/due_diligence_mas/mcp/tasks/0dd5ee14-9a49-4e5f-9093-79d8ae5af977.json
