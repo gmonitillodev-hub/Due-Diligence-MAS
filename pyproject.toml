@@ -22,12 +22,14 @@ dependencies = [
     "langgraph-supervisor (>=0.0.31,<0.0.32)",
     "fastapi (>=0.165.0,<0.166.0)",
     "langgraph-checkpoint-sqlite (>=3.1.3,<4.0.0)",
-    "uvicorn (>=0.54.0,<0.55.0)"
+    "uvicorn (>=0.54.0,<0.55.0)",
+    "mcp (>=1.30.0,<2)"
 ]
 
 [project.scripts]
-due-diligence-server = "due_diligence_mas.api_gateway.due_diligence_langgraph:init_gateway"
-due-diligence-crewai-server = "due_diligence_mas.api_gateway.due_diligence_crewai:init_gateway"
+langgraph-server = "due_diligence_mas.api_gateway.due_diligence_langgraph:init_gateway"
+crewai-server = "due_diligence_mas.api_gateway.due_diligence_crewai:init_gateway"
+task-server = "due_diligence_mas.mcp.task_manager:main"
 
 [tool.poetry]
 packages = [{include = "due_diligence_mas", from = "src"}]

@@ -20,9 +20,22 @@ cp .env.example .env   # set LLM provider and tool API keys
 ## Run
 
 ```bash
-poetry run due-diligence-crewai-server   # CrewAI REST server, http://127.0.0.1:8100
-poetry run due-diligence-server          # LangGraph REST server, http://127.0.0.1:8000
+poetry run crewai-server     # CrewAI REST server, http://127.0.0.1:8100
+poetry run langgraph-server  # LangGraph REST server, http://127.0.0.1:8000
+poetry run task-server       # Task manager MCP server (stdio)
 ```
+
+### Task manager MCP server
+
+Exposes the `get_users` and `create_task` tools. Each created task is saved as `<task_id>.json` in `src/due_diligence_mas/mcp/tasks/`.
+
+Inspect and test the tools with the MCP Inspector (requires Node.js):
+
+```bash
+poetry run mcp dev src/due_diligence_mas/mcp/task_manager.py
+```
+
+The default transport is stdio: the client (e.g. the agents) must spawn the server as a subprocess, which also works inside a single Colab notebook.
 
 To run the CrewAI flow from the terminal (it prompts for the company details, then asks for approval before the debate phase):
 

@@ -5,7 +5,7 @@ from typing import Literal
 
 LOG_DIR = Path("log")
 
-LogType = Literal["lg_api_gateway", "ca_api_gateway", "crew", "node"]
+LogType = Literal["lg_api_gateway", "ca_api_gateway", "crew", "node", "mcp_task"]
 
 
 def setup_logger(log_type: LogType, enable_console=False) -> logging.Logger:
@@ -53,3 +53,8 @@ def log_node(node: str, status: str, **details):
 def log_crew(crew: str, status: str, **details):
     """Log a CrewAI crew or flow step status line to log/crew."""
     _log_event("crew", crew, status, details)
+
+
+def log_mcp_task(source: str, status: str, **details):
+    """Log a task manager MCP server status line to log/mcp_task."""
+    _log_event("mcp_task", source, status, details)
