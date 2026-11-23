@@ -18,7 +18,7 @@ class TaskDef:
     expected_output: str
     output_schema: Optional[type[BaseModel]] = None
     bind_agent: bool = True
-    tools: tuple[str, ...] = ()  # tool keys available only to this task (CrewAI)
+    tools: tuple[str, ...] = ()
 
 
 class SpecAgent(BaseAgent):
@@ -50,7 +50,7 @@ class SpecAgent(BaseAgent):
         return {}
 
     def _adapter(self):
-        # Imported lazily so only the selected framework needs to be installed
+        """Return the adapter of the selected framework, imported lazily so only that framework needs to be installed."""
         match self.framework:
             case Framework.CREW_AI:
                 from due_diligence_mas.mas_definition.agents.adapters import crewai as adapter

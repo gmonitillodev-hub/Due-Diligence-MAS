@@ -20,7 +20,6 @@ TOOLS = {
     "tavily_page_extractor": lambda: get_tavily_tool("page_extractor"),
 }
 
-# Task-level tools: resolved from the agent, only the task that lists the key can use them
 TASK_TOOLS = {
     "mcp_tasks": lambda agent: agent.get_mcp_tools([get_task_server_crewai()]),
 }

@@ -22,6 +22,7 @@ class AnalystCrew(BaseCrew):
         return not self.required_agents or agent_cls.name.value in self.required_agents
 
     def _setup(self):
+        """Add the specialists, then the memo writer that aggregates all their outputs."""
         specialists = [
             (TechReviewer_Agent, "tech"),
             (CommercialAnalyst_Agent, "commercial"),
@@ -33,7 +34,6 @@ class AnalystCrew(BaseCrew):
             if self._is_required(agent_cls)
         ]
 
-        # Aggregation, run by the memo writer on all the specialists' outputs
         specialist_tasks = [task for agent in added for task in agent.get_tasks()]
         self.memo_writer = self.add(
             MemoWriter_Agent(), self.company.profile_topic(), context=specialist_tasks, key="aggregation"

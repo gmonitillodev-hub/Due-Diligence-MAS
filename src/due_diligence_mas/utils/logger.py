@@ -12,7 +12,7 @@ def setup_logger(log_type: LogType, enable_console=False) -> logging.Logger:
     """Create a logger writing to log/<log_type>/{info,error}.log."""
     logger = logging.getLogger(f"{log_type}_logger")
     if logger.handlers:
-        return logger  # already configured, avoid duplicated handlers
+        return logger
 
     log_dir = LOG_DIR / log_type
     log_dir.mkdir(parents=True, exist_ok=True)

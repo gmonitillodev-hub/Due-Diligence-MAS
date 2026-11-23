@@ -2,7 +2,6 @@ from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.research import CONTEXT_FIRST
 
-# Free sources for financial and funding data, in order of reliability
 FINANCIAL_SOURCES = [
     "Companies House, UK annual accounts (https://find-and-update.company-information.service.gov.uk/): open the company, Filing history > Accounts, and the PDF of the relevant period. "
     "Record turnover, profit or loss, balance sheet, the financial year-end and whether the accounts cover the company or the group; small filings may omit the income statement.",

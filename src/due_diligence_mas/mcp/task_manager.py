@@ -9,7 +9,7 @@ from due_diligence_mas.mcp.repository import TASKS_DIR, save_task
 from due_diligence_mas.mcp.users import User, get_mock_users
 from due_diligence_mas.utils.logger import log_mcp_task, setup_logger
 
-TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio")  # stdio | streamable-http
+TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio")
 HOST = os.getenv("MCP_HOST", "127.0.0.1")
 PORT = int(os.getenv("MCP_PORT", "8200"))
 
@@ -54,7 +54,8 @@ def create_task(assignee: str, description: str, priority: str) -> Task:
 
 
 def main():
-    setup_logger("mcp_task", enable_console=True)  # console goes to stderr, stdout stays free for stdio
+    """Start the MCP server on the configured transport. Console logs go to stderr, stdout stays free for stdio."""
+    setup_logger("mcp_task", enable_console=True)
     tools = [t.name for t in asyncio.run(mcp.list_tools())]
     if TRANSPORT == "stdio":
         log_mcp_task("server", "starting", transport=TRANSPORT, port="n/a (stdio)", tools=tools, tasks_dir=TASKS_DIR)

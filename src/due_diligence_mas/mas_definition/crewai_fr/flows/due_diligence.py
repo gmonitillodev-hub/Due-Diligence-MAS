@@ -39,13 +39,10 @@ class DueDiligenceFlow_State(BaseModel):
     
     company_info: Optional[CompanyInfo] = None
     
-    # Profiling output
     profile: Optional[CompanyProfile] = None
     
-    # Results of the analysis and debate
     analysis_results: Optional[str] = None
     analysis_review: Optional[AnalysisReview] = None
-    # Metrics of every executed crew, in execution order
     crews_metrics: list[dict] = Field(default_factory=list)
     
     debate_results: Optional[str] = None  

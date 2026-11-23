@@ -22,8 +22,6 @@ def _run_writer_agent(node: str, task: str, topic: str) -> str:
                 {
                     "messages": writer.get_tasks()
                 },
-                #config=self.checkpointer_config,
-                #context=session_data,
             )
     output = result["messages"][-1].content
 

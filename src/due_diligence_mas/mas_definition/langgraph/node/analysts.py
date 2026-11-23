@@ -47,8 +47,6 @@ def tech_reviewer_node(state: DueDiligence_State):
                 {
                     "messages": tech_reviewer.get_tasks()
                 },
-                #config=self.checkpointer_config,
-                #context=session_data,
             )
     _log(node, "end", elapsed_s=round(time.perf_counter() - t0, 2))
     return {"company_profile": CompanyProfile(tech=[result["messages"][-1].content])}
@@ -68,8 +66,6 @@ def commercial_analyst_node(state: DueDiligence_State):
                 {
                     "messages": commercial_analyst.get_tasks()
                 },
-                #config=self.checkpointer_config,
-                #context=session_data,
             )
     _log(node, "end", elapsed_s=round(time.perf_counter() - t0, 2))
     return {"company_profile": CompanyProfile(commercial=[result["messages"][-1].content])}
@@ -89,8 +85,6 @@ def team_analyst_node(state: DueDiligence_State):
                 {
                     "messages": team_analyst.get_tasks()
                 },
-                #config=self.checkpointer_config,
-                #context=session_data,
             )
     _log(node, "end", elapsed_s=round(time.perf_counter() - t0, 2))
     return {"company_profile": CompanyProfile(team=[result["messages"][-1].content])}

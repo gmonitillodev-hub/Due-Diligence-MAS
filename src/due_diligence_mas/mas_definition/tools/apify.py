@@ -22,11 +22,11 @@ def _tool_class(framework: Framework):
 
 
 def get_linkedin_tool(tool_type: str = "profile", framework: Framework = Framework.CREW_AI):
-    """LinkedIn tool backed by an Apify actor. tool_type: one of APIFY_ACTORS."""
+    """LinkedIn tool backed by an Apify actor. tool_type: one of APIFY_ACTORS.
+    crewai_tools names the actor argument `actor_name`, langchain_apify `actor_id`."""
     if tool_type not in APIFY_ACTORS:
         raise ValueError(f"Unknown Apify tool type '{tool_type}'. Available: {', '.join(APIFY_ACTORS)}")
 
     actor = APIFY_ACTORS[tool_type]
-    # crewai_tools names the actor argument `actor_name`, langchain_apify `actor_id`
     argument = "actor_id" if framework == Framework.LANG_GRAPH else "actor_name"
     return _tool_class(framework)(**{argument: actor})

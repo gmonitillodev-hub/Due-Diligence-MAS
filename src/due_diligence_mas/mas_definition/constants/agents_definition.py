@@ -5,20 +5,17 @@ from due_diligence_mas.mas_definition.constants.research import RESEARCH_RIGOR
 
 class AgentName(Enum):
     
-        # Analyst agents
         TECH_REVIEWER = "Tech Reviewer"
         COMMERCIAL_ANALYST = "Commercial Analyst"
         COMPANY_PROFILER = "Company Profiler"
         ANALYST_SUPERVISOR = "Analyst Supervisor"
         TEAM_ANALYST = "Team Analyst"
         
-        # Debate agents
         DEBATE_FORMATTER = "Debate Formatter"
         OPPORTUNITY_ANALYST = "Opportunity Analyst"
         RISK_ANALYST = "Risk Analyst"
         DEBATE_JUDGE = "Debate Judge"
         
-        # Memo writer agent
         MEMO_WRITER = "Memo Writer"
 
 AGENTS = {

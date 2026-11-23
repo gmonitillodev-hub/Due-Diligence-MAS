@@ -7,7 +7,6 @@ class MemoWriter_Agent(SpecAgent):
     tools = ("current_context",)
 
     tasks_def = {
-        # Aggregation of the specialists' outputs into a single analysis, input of the "memo" task
         "aggregation": TaskDef(
             description="""
                     Aggregate the reports produced by the specialists (technology, commercial, team) in the context

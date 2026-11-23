@@ -17,7 +17,7 @@ def _get(path: str, params: dict | None = None) -> requests.Response:
 
 
 def _contributors(full_name: str) -> int | None:
-    # per_page=1 so the page number in the Link header equals the total
+    """Contributor count of a repo. per_page=1 so the page number in the Link header equals the total."""
     resp = _get(f"/repos/{full_name}/contributors", {"per_page": 1, "anon": "true"})
     if resp.status_code != 200:
         return None

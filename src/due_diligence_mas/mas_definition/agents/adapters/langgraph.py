@@ -46,7 +46,7 @@ def build_agent(definition, task):
         model=LLM_PROVIDER().get_chat_model(),
         tools=_resolve_tools(definition.tools),
         system_prompt=definition.backstory,
-        response_format=ToolStrategy(output_schema) if output_schema else None, # Define a tool useful to format the response in a given BaseModel
+        response_format=ToolStrategy(output_schema) if output_schema else None,
         middleware=_limit_middleware(definition),
         name=agent_slug(definition.spec["name"]),
     )

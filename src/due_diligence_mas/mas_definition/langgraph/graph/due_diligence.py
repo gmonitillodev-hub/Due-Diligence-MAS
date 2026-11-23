@@ -30,7 +30,6 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from pydantic import BaseModel
 
 
-# Agent node functions, by agent
 AGENT_NODES = {
     AgentName.TECH_REVIEWER: tech_reviewer_node,
     AgentName.COMMERCIAL_ANALYST: commercial_analyst_node,
@@ -52,7 +51,6 @@ def _pydantic_models(*modules) -> list[tuple[str, str]]:
     ]
 
 
-# Types stored in the checkpoints; any other type is blocked when loading the state
 STATE_MODELS = _pydantic_models(company_classes, shared_state)
 
 
@@ -85,22 +83,17 @@ class DueDiligence_Graph():
             self.graph_builder.add_node(node_name(agent), function)
 
     def _build_edges(self):
-        
+        """Wire the graph: profiler <-> supervisor loop, human review, analyst fan-out/join, optional debate (formatter, PRO, CONTRO, judge) and memo writer."""
         self.graph_builder.add_edge(START, REQUEST_HANDLER_NODE)
         self.graph_builder.add_edge(REQUEST_HANDLER_NODE, PROFILER_NODE)
         self.graph_builder.add_edge(PROFILER_NODE, SUPERVISOR_NODE)
 
-        # Single supervisor: profile gate (back to the profiler or on to the fan out node), then completeness score of the aggregated analysis before the human review
         self.graph_builder.add_conditional_edges(SUPERVISOR_NODE, supervisor_router, [PROFILER_NODE, FAN_OUT_NODE, HUMAN_REVIEW_NODE])
-        # Human in the loop: proceed with the debate or go straight to the memo writer
         self.graph_builder.add_conditional_edges(HUMAN_REVIEW_NODE, preview_and_confirm_router, [debate_entry_node(), MEMO_WRITER_NODE])
         self.graph_builder.add_conditional_edges(FAN_OUT_NODE, analyst_fan_out_node, [node_name(a) for a in ANALYST_AGENTS])
 
-        # Join: the aggregator runs when all the dispatched analysts are done, then the supervisor scores its output
         self.graph_builder.add_edge([node_name(a) for a in ENABLED_ANALYST_AGENTS], ANALYSIS_AGGREGATOR_NODE)
         self.graph_builder.add_edge(ANALYSIS_AGGREGATOR_NODE, SUPERVISOR_NODE)
-        
-        # Debate: human review -> formatter (optional, SKIP_DEBATE_FORMATTER) -> PRO -> CONTRO -> judge
         
         if not skip_debate_formatter():
             self.graph_builder.add_edge(DEBATE_FORMATTER_NODE, OPPORTUNITY_ANALYST_NODE)
@@ -112,8 +105,7 @@ class DueDiligence_Graph():
 
         
     def _compile_grap(self):
-        
-        # State checkpoints share the executions db, so a paused execution survives a restart
+        """Compile the graph. State checkpoints share the executions db, so a paused execution survives a restart."""
         serializer = JsonPlusSerializer(allowed_msgpack_modules=STATE_MODELS)
         checkpointer = SqliteSaver(sqlite3.connect(db_path(), check_same_thread=False), serde=serializer)
 
@@ -140,12 +132,11 @@ class DueDiligence_Graph():
         return self._execute(Command(resume=decision), thread_id, tracker)
 
     def _execute(self, graph_input, thread_id: str, tracker: UsageTracker) -> dict:
-        """Stream the graph keeping the execution row up to date, then close it as awaiting review or completed."""
+        """Stream the graph keeping the execution row up to date, then close it as awaiting review or completed. The human wait between run() and resume() is outside measure(), so it is not counted."""
         config = {"configurable": {"thread_id": thread_id}, "callbacks": [tracker]}
         interrupt_payload = None
 
         try:
-            # The human wait between run() and resume() is outside measure(), so it is not counted
             with tracker.measure():
                 for chunk in self.compiled_graph.stream(graph_input, config, stream_mode="updates"):
                     for node, update in chunk.items():

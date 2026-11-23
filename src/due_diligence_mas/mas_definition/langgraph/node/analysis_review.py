@@ -14,27 +14,27 @@ from due_diligence_mas.mas_definition.tools.mcp_task import get_task_tools
 from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
 from due_diligence_mas.utils.logger import log_node as _log
 
-MAX_TASKS = 2  # tech, commercial
+MAX_TASKS = 2
 
 
 def review_analysis(state: DueDiligence_State):
-    """Completeness gate: an agent scores the aggregated analysis from 0 to 10 before the debate and, when it decides follow-up work is needed, creates tasks through the task manager MCP tools."""
+    """Completeness gate: an agent scores the aggregated analysis from 0 to 10 before the debate and, when it decides follow-up work is needed, creates tasks through the task manager MCP tools. MCP tools are async only, the graph is sync."""
     generic = "\n".join(state.company_profile.generic or []) if state.company_profile else ""
     content = f"COMPANY: {state.describe()}\n\nPROFILE:\n{generic}\n\nAGGREGATED ANALYSIS:\n{state.analysis_results}"
-    # MCP tools are async only, the graph is sync
     review = asyncio.run(_review_analysis_agent(content))
     _log(SUPERVISOR_NODE, "analysis review", score=review.score, missing=len(review.missing))
     return {"supervision": SupervisionState(analysis_review=review)}
 
 
 async def _review_analysis_agent(content: str) -> AnalysisReview:
+    """Run the review agent with the task tools. Hard cap of one task per topic; no checkpointer, so it does not inherit the graph's sync SqliteSaver, which cannot run under ainvoke."""
     agent = create_agent(
         model=LLM_PROVIDER().get_chat_model(),
         tools=await get_task_tools(),
         system_prompt=backstory_builder(AgentName.ANALYST_SUPERVISOR.value),
         response_format=ToolStrategy(AnalysisReview),
-        middleware=[ToolCallLimitMiddleware(tool_name="create_task", run_limit=MAX_TASKS)],  # hard cap: one task per topic
-        checkpointer=False,  # do not inherit the graph's sync SqliteSaver, which cannot run under ainvoke
+        middleware=[ToolCallLimitMiddleware(tool_name="create_task", run_limit=MAX_TASKS)],
+        checkpointer=False,
     )
     result = await agent.ainvoke({"messages": [{"role": "user", "content": f"{ANALYSIS_REVIEW_CRITERIA}\n\n{TASK_CREATION_INSTRUCTIONS}\n\n{content}"}]})
     _log(SUPERVISOR_NODE, "analysis review agent", tools_called=[m.name for m in result["messages"] if getattr(m, "type", "") == "tool"])

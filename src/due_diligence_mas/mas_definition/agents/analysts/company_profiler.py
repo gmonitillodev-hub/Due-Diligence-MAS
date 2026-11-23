@@ -33,7 +33,7 @@ class CompanyProfiler_Agent(SpecAgent):
     }
 
     def __init__(self, framework: Framework = Framework.CREW_AI):
-        # Raw final output of every execution delegated to this agent, in order
+        """Keep the raw final output of every execution delegated to this agent, in order."""
         self.raw_outputs: list[str] = []
         super().__init__(framework)
 
@@ -41,9 +41,9 @@ class CompanyProfiler_Agent(SpecAgent):
         return {"step_callback": self._collect_raw_output}
 
     def _collect_raw_output(self, step):
+        """Store the final answers only: the callback also receives tool results."""
         from crewai.agents.parser import AgentFinish
 
-        # The callback also receives tool results: keep only the final answers
         if isinstance(step, AgentFinish):
             self.raw_outputs.append(step.text)
             print(f"\n  [Profiler] execution {len(self.raw_outputs)} finished ({len(step.text)} chars)\n")

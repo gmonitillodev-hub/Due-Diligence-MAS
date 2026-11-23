@@ -26,8 +26,6 @@ def _run_debate_agent(agent_cls, topic: str, context: list[str]) -> str:
                 {
                     "messages": debate_agent.get_tasks()
                 },
-                #config=self.checkpointer_config,
-                #context=session_data,
             )
     report = result["messages"][-1].content
 

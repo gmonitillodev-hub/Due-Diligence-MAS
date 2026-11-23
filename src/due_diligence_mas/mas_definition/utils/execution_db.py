@@ -14,13 +14,12 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-# <repo>/doc/executions/executions.db, overridable with EXECUTIONS_DB
 DEFAULT_EXECUTIONS_DB = Path(__file__).resolve().parents[4] / "database" / "executions.db"
 
 
 class ExecutionStatus(str, Enum):
     RUNNING = "running"
-    AWAITING_REVIEW = "awaiting_review"  # paused at the human review, resume with Proceed / End
+    AWAITING_REVIEW = "awaiting_review"
     COMPLETED = "completed"
     FAILED = "failed"
 
@@ -48,13 +47,11 @@ CREATE TABLE IF NOT EXISTS trackers (
 )
 """
 
-# Columns holding JSON: dicts are dumped on write and parsed on read
 JSON_COLUMNS = ("metrics", "pending_review")
 UPDATABLE_COLUMNS = {
     "company_name", "status", "current_node", "current_crew", "metrics", "memo_markdown", "pending_review",
 }
 
-# Columns and status values of the first version of the table
 LEGACY_COLUMNS = {"company": "company_name", "memo": "memo_markdown", "interrupt": "pending_review"}
 
 

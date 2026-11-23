@@ -25,7 +25,6 @@ class UsageTracker(BaseCallbackHandler):
         self.prompt_tokens = 0
         self.completion_tokens = 0
         self.active_s = 0.0
-        # Tokens by model, needed because every model has its own price
         self.models: dict[str, dict[str, int]] = {}
         self.root_run_ids: list[str] = []
 

@@ -29,21 +29,12 @@ due_diligence_graph = DueDiligence_Graph()
 @graph_gateway.get("/health")
 async def health():
     return {"status": "available"}
-
-@graph_gateway.get('/system_info')
-async def system_info():
-    return {
-        "version": "1.0.0",
-        "author": "Giuseppe Monitillo",
-        "description": "LLM Mock provider - This provider will return always 200 and proper responses",
-        "status": "PartiallyAvailable"
-    }
     
 def _run_in_background(company_info: CompanyInfo, session_id: str):
+    """Run the graph after the response is sent; follow it with GET /execution. The graph already marks the execution row as failed."""
     try:
         due_diligence_graph.run(company_info, session_id)
     except Exception as e:
-        # The execution row is already marked as failed by the graph
         logger.exception(f"Background run failed (sessionId: {session_id}): {e}")
 
 def _resume_in_background(decision: str, session_id: str):
@@ -65,7 +56,6 @@ async def run_graph(
     try:
         sessionId = create_session_id()
             
-        # The graph runs after the response is sent; follow it with GET /execution
         background_tasks.add_task(_run_in_background, payload.company_info, sessionId)
   
         """ 
@@ -99,7 +89,6 @@ async def resume_after_interrupt(
         if execution is None or execution["status"] != ExecutionStatus.AWAITING_REVIEW.value:
             raise HTTPException(status_code=409, detail="No execution awaiting review to resume for this session")
 
-        # The graph resumes after the response is sent; follow it with GET /execution
         background_tasks.add_task(_resume_in_background, payload.decision.value, sessionId)
 
         return {"sessionId": sessionId, "status": "resumed"}

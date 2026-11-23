@@ -23,10 +23,9 @@ class ProfilerCrew(BaseCrew):
         self.profiler = self.add(CompanyProfiler_Agent(), self.topic)
 
     def build_crew(self):
+        """Build the crew, then strip tools from the tasks: the manager runs every task and would otherwise use the profiler's tools itself. __dict__ bypasses the validator, which would copy the tools back."""
         super().build_crew()
 
-        # The manager runs every task and would otherwise use the profiler's tools itself;
-        # __dict__ bypasses the validator, which would copy the tools back.
         for task in self.crew.tasks:
             task.__dict__["tools"] = []
 

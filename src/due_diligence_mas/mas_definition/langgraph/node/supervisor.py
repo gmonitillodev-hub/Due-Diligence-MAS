@@ -54,17 +54,15 @@ def _merge_iterations(iterations: list[CompanyProfile]) -> CompanyProfile:
 
 
 def _review_profile(state: DueDiligence_State):
-    """Profile gate: merges the iterations, then approves the profile or sends it back to the profiler with feedback."""
+    """Profile gate: merges the iterations, then approves the profile or sends it back to the profiler with feedback. An issue already requested is never sent again; the gate closes when approved or when the revisions are exhausted."""
     profile = _merge_iterations(state.profile_iterations) if len(state.profile_iterations) > 1 else state.company_profile
     requested = "\n".join(f"- {i}" for i in state.supervision.requested_issues) or "- none"
     review = _supervisor_llm_call(REVIEW_CRITERIA, f"COMPANY: {state.describe()}\n\nALREADY REQUESTED:\n{requested}\n\nPROFILE:\n{profile.model_dump_json(indent=2)}", ProfileReview)
-    # Safety net: an issue already requested is never sent again
     seen = {i.strip().lower() for i in state.supervision.requested_issues}
     review.issues = [i for i in review.issues if i.strip().lower() not in seen]
     if not review.issues:
         review.approved, review.feedback = True, ""
     _log(SUPERVISOR_NODE, "profile review", approved=review.approved, new_issues=len(review.issues), already_requested=len(seen), revisions=state.supervision.profile_revisions)
-    # The profile gate is closed when approved or when the revisions are exhausted
     validated = review.approved or state.supervision.profile_revisions > MAX_PROFILE_REVISIONS
     return {"company_profile": profile, "supervision": SupervisionState(profile_review=review, profile_validated=validated, requested_issues=review.issues)}
 

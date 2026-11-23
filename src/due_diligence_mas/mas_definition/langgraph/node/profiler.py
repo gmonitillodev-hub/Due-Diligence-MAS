@@ -7,6 +7,7 @@ from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueD
 from due_diligence_mas.utils.logger import log_node as _log
 
 def company_profiler_node(state: DueDiligence_State):
+    """Run the profiler (first pass or revision with supervisor feedback). The agent's ToolStrategy(CompanyProfile) fills `structured_response`."""
     profiler = CompanyProfiler_Agent(framework=Framework.LANG_GRAPH)
     review = state.supervision.profile_review
     revision = review is not None and not review.approved
@@ -17,7 +18,6 @@ def company_profiler_node(state: DueDiligence_State):
         context = [f"PREVIOUS PROFILE:\n{state.company_profile.model_dump_json(indent=2)}", f"SUPERVISOR FEEDBACK (fix these issues, keep the correct facts):\n{review.feedback}\n" + "\n".join(f"- {i}" for i in review.issues)]
     profiler.build_tasks(topic=state.company_info.describe(), context=context)
 
-    # The agent's ToolStrategy(CompanyProfile) fills `structured_response`
     result = profiler.get_agent().invoke({"messages": profiler.get_tasks()})
 
     return {
