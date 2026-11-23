@@ -1,27 +1,13 @@
 import asyncio
 import os
-from enum import Enum
-from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from mcp.server.fastmcp import FastMCP
-from pydantic import BaseModel, Field
 
+from due_diligence_mas.mcp.models import Priority, Task
+from due_diligence_mas.mcp.repository import TASKS_DIR, save_task
 from due_diligence_mas.mcp.users import User, get_mock_users
 from due_diligence_mas.utils.logger import log_mcp_task, setup_logger
-
-TASKS_DIR = Path(__file__).resolve().parent / "tasks"
-
-class Priority(Enum):
-    HIGH= "HIGH"
-    MEDIUM= "MEDIUM"
-    LOW = "LOW"
-
-class Task(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
-    assignee: UUID
-    description: str
-    priority: Priority
 
 TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio")  # stdio | streamable-http
 HOST = os.getenv("MCP_HOST", "127.0.0.1")
@@ -29,18 +15,19 @@ PORT = int(os.getenv("MCP_PORT", "8200"))
 
 mcp = FastMCP("Task manager", host=HOST, port=PORT)
 
+
 @mcp.tool()
 def get_users() -> list[User]:
-    """ 
+    """
         Get available users of task manager system
-        
+
         Returns:
             List of users
     """
-    
     users = get_mock_users()
     log_mcp_task("get_users", "done", count=len(users))
     return users
+
 
 @mcp.tool()
 def create_task(assignee: str, description: str, priority: str) -> Task:
@@ -61,9 +48,7 @@ def create_task(assignee: str, description: str, priority: str) -> Task:
         description=description,
         priority=Priority(priority.upper()),
     )
-    TASKS_DIR.mkdir(parents=True, exist_ok=True)
-    path = TASKS_DIR / f"{task.id}.json"
-    path.write_text(task.model_dump_json(indent=2))
+    path = save_task(task)
     log_mcp_task("create_task", "saved", task_id=task.id, path=path)
     return task
 

@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
-from due_diligence_mas.mas_definition.classes.company import AnalysisReview, CompanyProfile, ProfileReview
+from due_diligence_mas.mas_definition.classes.company import CompanyProfile, ProfileReview
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.langgraph import DEBATE_FORMATTER_NODE, FAN_OUT_NODE, HUMAN_REVIEW_NODE, MAX_PROFILE_REVISIONS, OPPORTUNITY_ANALYST_NODE, PROFILER_NODE, SUPERVISOR_NODE, skip_debate_formatter
 from due_diligence_mas.mas_definition.langgraph.classes.shared_state import DueDiligence_State, SupervisionState
+from due_diligence_mas.mas_definition.langgraph.node.analysis_review import review_analysis
 from due_diligence_mas.utils.logger import log_node as _log
 from due_diligence_mas.mas_definition.providers.llm_provider import LLM_PROVIDER
 from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
@@ -27,15 +28,6 @@ REVIEW_CRITERIA = (
     "If not approved, list the concrete issues and give the profiler actionable feedback.\n"
     "Issues listed under ALREADY REQUESTED were sent to the profiler in a previous iteration: never report them again, even if still open. "
     "Report only NEW issues, and give feedback only for them. Approve if no new issue is left."
-)
-
-ANALYSIS_REVIEW_CRITERIA = (
-    "Review the aggregated analysis below, built from the analysts' reports, as the completeness gate before the debate. Give a completeness score from 0 to 10:\n"
-    "- 0 = nothing usable, 10 = every area fully covered and source-backed;\n"
-    "- check the analysis covers all the topics of each area (no skipped topics), is grounded in the profile facts and cites sources;\n"
-    "- check that gaps and open questions are declared explicitly, not hidden;\n"
-    "- penalize generic, unsupported or off-target statements;\n"
-    "- give ONE overall score for the whole analysis, not one per analyst, and list the concrete missing items."
 )
 
 
@@ -77,19 +69,11 @@ def _review_profile(state: DueDiligence_State):
     return {"company_profile": profile, "supervision": SupervisionState(profile_review=review, profile_validated=validated, requested_issues=review.issues)}
 
 
-def _review_analysis(state: DueDiligence_State):
-    """Completeness gate: scores the aggregated analysis from 0 to 10 before the debate."""
-    generic = "\n".join(state.company_profile.generic or []) if state.company_profile else ""
-    review = _supervisor_llm_call(ANALYSIS_REVIEW_CRITERIA, f"COMPANY: {state.describe()}\n\nPROFILE:\n{generic}\n\nAGGREGATED ANALYSIS:\n{state.analysis_results}", AnalysisReview)
-    _log(SUPERVISOR_NODE, "analysis review", score=review.score, missing=len(review.missing))
-    return {"supervision": SupervisionState(analysis_review=review)}
-
-
 def supervisor_node(state: DueDiligence_State):
     """Single supervisor node, guarantor of profiling quality and analysis completeness.
 
     First visit(s), after the profiler: profile gate. Visit after the aggregator: completeness score."""
-    return _review_analysis(state) if state.supervision.profile_validated else _review_profile(state)
+    return review_analysis(state) if state.supervision.profile_validated else _review_profile(state)
 
 
 def supervisor_router(state: DueDiligence_State):

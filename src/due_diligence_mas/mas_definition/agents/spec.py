@@ -18,6 +18,7 @@ class TaskDef:
     expected_output: str
     output_schema: Optional[type[BaseModel]] = None
     bind_agent: bool = True
+    tools: tuple[str, ...] = ()  # tool keys available only to this task (CrewAI)
 
 
 class SpecAgent(BaseAgent):

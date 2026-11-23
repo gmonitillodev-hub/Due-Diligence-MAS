@@ -1,19 +1,21 @@
 from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
+from due_diligence_mas.mas_definition.constants.research import ANALYST_REPORT_FORMAT, CONTEXT_FIRST
 
 
 class TechReviewer_Agent(SpecAgent):
     name = AgentName.TECH_REVIEWER
-    tools = ("github_repos", "tavily_page_extractor",)
+    tools = ("tavily_search", "github_repos", "tavily_page_extractor",)
 
     tasks_def = {
         "main": TaskDef(
             description=(
                 "Review the technology aspects of the target company: {topic}. "
-                "Start from the provided context (official URLs, findings, missing items): search only for information that is absent or listed as missing, and do not repeat searches already covered by the context. "
-                "If the company has an official public GitHub organization (linked from its website or docs), use the GitHub repositories tool with that owner to gather open-source evidence. "
-                "Do not guess organizations: if none is confirmed, report GitHub signals as unavailable.Mark as To be confirmed all data fetched from GitHub.Perform a first match to ensure that all data are related actually to the company"
+                f"{CONTEXT_FIRST} "
+                "If the company has an official GitHub organization (linked from its website or docs), use the GitHub repositories tool with that owner to gather open-source evidence; "
+                "do not guess organizations, and if none is confirmed report the GitHub signals as unavailable. "
+                "Check that the repositories really belong to the company and mark all GitHub data as to be confirmed."
             ),
-            expected_output="A markdown report with: a short summary; the findings as a list, each with its source URL, access date and whether it is verified, a company claim or to be confirmed; and a 'Missing information' list.",
+            expected_output=ANALYST_REPORT_FORMAT,
         ),
     }

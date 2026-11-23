@@ -1,6 +1,8 @@
 """Agent definitions. `description` feeds the backstory; `goal` is passed separately to the agent."""
 from enum import Enum
 
+from due_diligence_mas.mas_definition.constants.research import RESEARCH_RIGOR
+
 class AgentName(Enum):
     
         # Analyst agents
@@ -35,12 +37,10 @@ AGENTS = {
         "goal": (
             """ 
                 Analyze the company's products and services using its official website,
-                product pages, documentation, pricing, FAQs, and customer case studies.
-                Extract the value proposition, target customers, key features, integrations,
-                pricing model, and limitations. Cross-check findings against public reviews
-                on g2.com, capterra.com, and relevant marketplaces.
-                Cite sources, distinguish marketing claims from documented capabilities,
-                and flag missing or conflicting information. 
+                product pages, documentation, pricing, FAQs, and customer case studies,
+                and cross-check them against public reviews (g2.com, capterra.com, marketplaces).
+                Distinguish marketing claims from documented capabilities,
+                and flag missing or conflicting information.
             """
         ),
         "responsibilities": [
@@ -64,8 +64,8 @@ AGENTS = {
                 "claimed, verify whether the claim is supported or merely "
                 "marketing language."
             ),
-        ],
-        "limits": {"max_iter": 5, "max_execution_time": 420},
+        ] + RESEARCH_RIGOR,
+        "limits": {"max_iter": 8, "max_execution_time": 600},
     },
     "Commercial Analyst": {
         "name": "Commercial Analyst",
@@ -78,15 +78,13 @@ AGENTS = {
             "competition, pricing, go-to-market and traction. You treat "
             "public logos, testimonials and website claims as signals "
             "rather than proof, and you always call out missing financial data. "
-            "For funding, revenue and financial notices about the company you use "
-            "the dedicated funding news search tool."
+            "For funding and revenue news you use the funding news search tool."
         ),
         "goal": (
             "Assess the startup’s commercial attractiveness by analyzing "
             "market context, customer segments, competitors, monetization "
             "model, go-to-market signals, traction indicators, and missing "
-            "financial evidence."
-            "Analyze competitor offer and compare It with the company"
+            "financial evidence, and compare the competitors' offer with the company's."
         ),
         "responsibilities": [
             "market category",
@@ -110,8 +108,8 @@ AGENTS = {
                 "Public logos, testimonials, or website claims are signals, "
                 "not proof of revenue."
             ),
-        ],
-        "limits": {"max_iter": 5, "max_execution_time": 420},
+        ] + RESEARCH_RIGOR,
+        "limits": {"max_iter": 12, "max_execution_time": 900},
     },
     "Company Profiler": {
         "name": "Company Profiler",
@@ -214,8 +212,8 @@ AGENTS = {
         ),
         "goal": (
             "Assess whether the founding team and visible organization appear "
-            "capable of executing the company’s strategy."
-            "Fetch informations about team members."
+            "capable of executing the company’s strategy, based on public "
+            "information about the team members."
         ),
         "responsibilities": [
             "founder backgrounds",
@@ -235,8 +233,8 @@ AGENTS = {
                 "previous employers."
             ),
             "Assessment should be evidence-based and clearly mark unknowns.",
-        ],
-        "limits": {"max_iter": 5, "max_execution_time": 420},
+        ] + RESEARCH_RIGOR,
+        "limits": {"max_iter": 8, "max_execution_time": 600},
     },
     "Debate Formatter": {
         "name": "Debate Formatter",

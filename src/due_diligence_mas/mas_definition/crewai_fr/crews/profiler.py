@@ -40,7 +40,7 @@ class ProfilerCrew(BaseCrew):
         profile = getattr(output, "pydantic", None)
         if not profile:
             return f"no structured profile (raw chars: {len(output.raw)})"
-        counts = {f: len(getattr(profile, f)) for f in ("generic", "tech", "commercial", "team")}
+        counts = {f: len(getattr(profile, f) or []) for f in ("generic", "tech", "commercial", "team")}
         return f"{counts} total={sum(counts.values())}"
 
     def _log_executions(self, result):

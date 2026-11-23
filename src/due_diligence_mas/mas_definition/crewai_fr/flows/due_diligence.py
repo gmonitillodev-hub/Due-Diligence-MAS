@@ -2,10 +2,12 @@ import os
 
 from crewai.flow import Flow, start, listen, router, or_, HumanFeedbackPending, HumanFeedbackProvider, human_feedback
 from due_diligence_mas.mas_definition.classes import CompanyInfo, ProfiledCompany, CompanyProfile
+from due_diligence_mas.mas_definition.classes.company import AnalysisReview
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.crewai_fr.crews.analyst import AnalystCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.debate import DebateCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.profiler import ProfilerCrew
+from due_diligence_mas.mas_definition.crewai_fr.crews.review import AnalysisReviewCrew
 from due_diligence_mas.mas_definition.crewai_fr.crews.writer import MemoWriterCrew
 from due_diligence_mas.mas_definition.constants.common import Framework
 from due_diligence_mas.mas_definition.utils.execution_db import ExecutionStatus, create_execution, update_execution
@@ -42,6 +44,7 @@ class DueDiligenceFlow_State(BaseModel):
     
     # Results of the analysis and debate
     analysis_results: Optional[str] = None
+    analysis_review: Optional[AnalysisReview] = None
     # Metrics of every executed crew, in execution order
     crews_metrics: list[dict] = Field(default_factory=list)
     
@@ -108,6 +111,22 @@ class DueDiligenceFlow(Flow[DueDiligenceFlow_State]):
         return self.state.analysis_results
     
     @listen(analyze_company)
+    def review_analysis(self):
+        """
+        Completeness gate: score of the analysis, with follow-up tasks created by the reviewer if needed.
+        """
+        log_crew("flow", "review_analysis")
+
+        review_crew = AnalysisReviewCrew(
+            company=ProfiledCompany(company_info=self.state.company_info, company_profile=self.state.profile),
+            analysis=self.state.analysis_results,
+        )
+        self.state.analysis_review = self._run_crew(review_crew)
+        log_crew("flow", "analysis_reviewed", score=self.state.analysis_review.score, missing=len(self.state.analysis_review.missing))
+
+        return self.state.analysis_results
+
+    @listen(review_analysis)
     @human_feedback(     
           message="Please review the analysis and proceed or end the execution",
           provider=RestFeedbackProvider() 
@@ -201,7 +220,11 @@ def _close_execution(flow: DueDiligenceFlow, thread_id: str, result):
             current_node="ask_human_review",
             current_crew=None,
             metrics=flow._execution_metrics(),
-            pending_review={"analysis": flow.state.analysis_results, "options": ["proceed", "end"]},
+            pending_review={
+                "analysis": flow.state.analysis_results,
+                "analysis_review": flow.state.analysis_review.model_dump() if flow.state.analysis_review else None,
+                "options": ["proceed", "end"],
+            },
         )
     return result
 

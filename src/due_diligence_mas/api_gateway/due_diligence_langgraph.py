@@ -44,7 +44,7 @@ def _run_in_background(company_info: CompanyInfo, session_id: str):
         due_diligence_graph.run(company_info, session_id)
     except Exception as e:
         # The execution row is already marked as failed by the graph
-        logger.error(f"Background run failed (sessionId: {session_id}): {e}")
+        logger.exception(f"Background run failed (sessionId: {session_id}): {e}")
 
 def _resume_in_background(decision: str, session_id: str):
     try:

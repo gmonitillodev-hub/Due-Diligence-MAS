@@ -16,13 +16,13 @@ FUNDING_DOMAINS = [
 
 SEARCH_CONFIGS = {
     "search": {
-        "search_depth": "basic",
-        "max_results": 3,
+        "search_depth": "advanced",
+        "max_results": 5,
         "include_answer": False,
     },
     "profile_search": {
         "search_depth": "advanced",
-        "max_results": 4,
+        "max_results": 5,
         "include_answer": False,
     },
     "funding_search": {
@@ -31,9 +31,9 @@ SEARCH_CONFIGS = {
             "Search funding, revenue and financial news about a company, "
             "restricted to startup and financial news sources."
         ),
-        "search_depth": "basic",
+        "search_depth": "advanced",
         "topic": "news",
-        "max_results": 5,
+        "max_results": 7,
         "include_answer": False,
         "include_domains": FUNDING_DOMAINS,
     },

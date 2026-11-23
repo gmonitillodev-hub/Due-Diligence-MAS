@@ -3,6 +3,7 @@ from crewai import Agent, Task
 from due_diligence_mas.mas_definition.constants.common import Framework
 from due_diligence_mas.mas_definition.tools.apify import get_linkedin_tool
 from due_diligence_mas.mas_definition.tools.github import github_repos
+from due_diligence_mas.mas_definition.tools.mcp_task import get_task_server_crewai
 from due_diligence_mas.mas_definition.tools.request_handler import get_current_context
 from due_diligence_mas.mas_definition.tools.tavily import get_tavily_tool
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
@@ -17,6 +18,11 @@ TOOLS = {
     "tavily_funding_search": lambda: get_tavily_tool("funding_search"),
     "tavily_profile_search": lambda: get_tavily_tool("profile_search"),
     "tavily_page_extractor": lambda: get_tavily_tool("page_extractor"),
+}
+
+# Task-level tools: resolved from the agent, only the task that lists the key can use them
+TASK_TOOLS = {
+    "mcp_tasks": lambda agent: agent.get_mcp_tools([get_task_server_crewai()]),
 }
 
 
@@ -42,6 +48,7 @@ def build_tasks(definition, task_def, topic: str, context: list) -> list[Task]:
             expected_output=task_def.expected_output,
             agent=definition.agent if task_def.bind_agent else None,
             output_pydantic=task_def.output_schema,
+            tools=[tool for key in task_def.tools for tool in TASK_TOOLS[key](definition.agent)],
             context=context,
         )
     ]
