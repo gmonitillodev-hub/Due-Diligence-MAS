@@ -1,0 +1,97 @@
+Framework: LangGraph
+
+---------
+
+{
+    "company_info":{
+        "company_name":"ElevenLabs",
+        "company_site":"https://elevenlabs.io/",
+        "company_sector": "Voice AI / Conversational AI"
+    }
+}
+
+---------
+
+{
+    "thread_id": "82dc5a7a-c045-43e7-a94c-675fa7c42af1",
+    "company_name": "ElevenLabs",
+    "framework": "langgraph",
+    "status": "completed",
+    "current_node": null,
+    "current_crew": null,
+    "metrics": {
+        "total_time_s": 248.61,
+        "llm_calls": 28,
+        "tokens": {
+            "prompt": 151248,
+            "completion": 15089,
+            "total": 166337
+        },
+        "cost_usd": {
+            "input": 0.022687,
+            "output": 0.009053,
+            "total": 0.031741,
+            "by_model": {
+                "gpt-4o-mini-2024-07-18": {
+                    "input": 0.022687,
+                    "output": 0.009053,
+                    "total": 0.031741
+                }
+            },
+            "unpriced_models": []
+        },
+        "tracing": {
+            "langsmith_enabled": true,
+            "langsmith_project": "due_diligence",
+            "root_run_ids": [
+                "01a208cc-3cb5-753f-99d1-dff0b1d3577a",
+                "01a208cf-8854-75bc-a15b-c8ffb97bfbfb"
+            ]
+        }
+    },
+    "memo_markdown": "# Due Diligence Memo — ElevenLabs\n**Date:** 23 November 2026  \n**Scope:** This memo reviews the product and technology, commercial aspects, and team structure of ElevenLabs, with evidence cutoff as of October 2, 2023. It excludes any new research or claims not supported by the analysis.\n\n## Executive Summary\nElevenLabs is an emerging player in the Voice AI and Conversational AI sector, founded in 2022. The company specializes in voice-related technologies, including text-to-speech, speech-to-text, voice cloning, and AI dubbing, targeting enterprises, creators, and individuals with accessibility needs. Key findings indicate a robust product offering, notable client partnerships with companies such as Twilio and Disney, and significant funding exceeding $800 million, which positions ElevenLabs for substantial growth. However, the preliminary conclusion reveals critical risks, including a lack of transparency regarding financial health, dependency on a limited number of clients, and unverified technology performance claims. These factors necessitate further diligence to validate the company's assertions and assess its sustainability in a competitive market.\n\n## Company Profile\nElevenLabs operates in the Voice AI and Conversational AI sector, providing advanced AI solutions for seamless communication and content creation. The company was founded in 2022 and is based in the United Kingdom. As of today, the legal name and registration number have not been confirmed through Companies House, which raises initial concerns about its corporate governance.\n\n## Product and Technology\nElevenLabs offers a suite of products designed to enhance voice interaction capabilities. Their flagship offerings include:\n\n- **ElevenAgents**: A platform for designing and operating voice agents, featuring a visual builder for non-technical users and programmatic control for developers, as verified in their documentation [1].\n- **ElevenCreative**: A no-code web application for generating voiceovers, music, and dubs directly in the browser, also verified [1].\n- **ElevenAPI**: A REST interface for developers to integrate voice into applications, confirmed through their documentation [1].\n- **Reception.ai**: An AI phone receptionist that manages calls and appointments for small and medium businesses, verified [1].\n\nThe technology claims include ultra-realistic speech generation and support for over 90 languages with a library of more than 10,000 voices, as stated in their blog [2]. However, specific performance metrics or user testimonials to substantiate these claims are lacking, which weakens their credibility.\n\n## Commercial Picture\nThe commercial landscape for ElevenLabs appears promising, with an estimated Annual Recurring Revenue (ARR) of $80 million and a flexible pricing model that includes various tiers ranging from free to custom enterprise solutions [2]. The company has secured significant funding, including a recent $300 million tender offer valuing it at $22 billion, and a $500 million Series D round at an $11 billion valuation [2]. Notably, their client base includes major players like IBM, Disney, and Twilio, indicating strong market validation. However, the absence of detailed financial statements raises concerns about the company's profitability and long-term sustainability.\n\n## Team\nThe founding team consists of Mati Staniszewski (CEO) and Piotr Dabkowski (CTO), both of whom have relevant backgrounds in technology and AI. Staniszewski previously worked at Palantir Technologies, while Dabkowski has experience at Google in machine learning [1]. Their educational backgrounds and previous roles suggest a strong capability to execute the company's strategy. However, further insights into their leadership styles and the broader organizational structure are needed to assess the team's effectiveness fully.\n\n## Debate Summary\nThe debate surrounding ElevenLabs highlighted several strengths and weaknesses. The PRO arguments emphasized the company's strong product offering, notable client partnerships, and significant funding, while the CONTRO case raised concerns about unsubstantiated claims, dependency risks on key clients, and a lack of financial transparency. The judge concluded that while the growth potential is promising, substantial risks and uncertainties regarding financial health and product validation necessitate further diligence.\n\n## Material Risks\nSeveral material risks have been identified:\n\n1. **Unsubstantiated Claims**: The lack of independent validation for technology performance poses a risk to the company's credibility.\n2. **Dependency Risks**: Reliance on a limited number of key clients for revenue could threaten sustainability.\n3. **Market Competition**: Intense competition from established players in the voice AI sector presents a significant threat to ElevenLabs' market position.\n4. **Legal and Compliance Risks**: Insufficient information on security measures and compliance with regulations raises potential legal and reputational risks.\n5. **Financial Transparency**: The absence of detailed financial statements creates uncertainty about the company's financial health.\n\n## Information Gaps and Limits of Evidence\nCritical missing information includes:\n\n- Legal name and registration number from Companies House.\n- Detailed financial statements, including turnover, profit or loss, and balance sheet.\n- Confirmation of annual accounts filing status.\n- Insights into customer satisfaction and retention metrics.\n- Public reviews and competitor market share data.\n\nThese gaps highlight the need for priority questions regarding the company's financial health, client dependency, and technology validation.\n\n## Preliminary Conclusion and Next Steps\nThe evidence presents a mixed picture of ElevenLabs, with promising growth potential tempered by significant risks and uncertainties. Further diligence is warranted to address the critical missing data and validate the company's claims. This should include obtaining detailed financial statements, insights into customer satisfaction, and verification of technology performance. Understanding the competitive landscape and the nature of client partnerships will also be essential for making an informed investment decision.\n\n## Sources\n1. [ElevenLabs Documentation](https://elevenlabs.io/docs/overview/intro) | Accessed: 2023-10-02\n2. [ElevenLabs Blog](https://elevenlabs.io/blog/series-c) | Accessed: 2023-10-02\n3. [ElevenLabs Customer Stories](https://elevenlabs.io/customer-stories) | Accessed: 2023-10-02\n4. [TechCrunch](https://techcrunch.com/2024/10/03/investors-are-scrambling-to-get-into-elevenlabs-which-may-soon-be-valued-at-3-billion) | Accessed: 2023-10-02\n5. [Forbes](https://www.forbes.com/sites/charliefink/2026/01/21/elevenlabs-launches-ai-music-platform-enters-race-with-suno-and-udio) | Accessed: 2023-10-02\n6. [LinkedIn Profile of Piotr Dabkowski](https://www.linkedin.com/in/piotr-dabkowski-50222bba) | Accessed: 2023-10-02\n7. [ElevenLabs Pricing](https://elevenlabs.io/pricing) | Accessed: 2023-10-02",
+    "pending_review": null,
+    "created_at": "2026-11-23T14:25:32+00:00",
+    "updated_at": "2026-11-23T14:30:18+00:00"
+}{
+    "thread_id": "82dc5a7a-c045-43e7-a94c-675fa7c42af1",
+    "company_name": "ElevenLabs",
+    "framework": "langgraph",
+    "status": "completed",
+    "current_node": null,
+    "current_crew": null,
+    "metrics": {
+        "total_time_s": 248.61,
+        "llm_calls": 28,
+        "tokens": {
+            "prompt": 151248,
+            "completion": 15089,
+            "total": 166337
+        },
+        "cost_usd": {
+            "input": 0.022687,
+            "output": 0.009053,
+            "total": 0.031741,
+            "by_model": {
+                "gpt-4o-mini-2024-07-18": {
+                    "input": 0.022687,
+                    "output": 0.009053,
+                    "total": 0.031741
+                }
+            },
+            "unpriced_models": []
+        },
+        "tracing": {
+            "langsmith_enabled": true,
+            "langsmith_project": "due_diligence",
+            "root_run_ids": [
+                "01a208cc-3cb5-753f-99d1-dff0b1d3577a",
+                "01a208cf-8854-75bc-a15b-c8ffb97bfbfb"
+            ]
+        }
+    },
+    "memo_markdown": "# Due Diligence Memo — ElevenLabs\n**Date:** 23 November 2026  \n**Scope:** This memo reviews the product and technology, commercial aspects, and team structure of ElevenLabs, with evidence cutoff as of October 2, 2023. It excludes any new research or claims not supported by the analysis.\n\n## Executive Summary\nElevenLabs is an emerging player in the Voice AI and Conversational AI sector, founded in 2022. The company specializes in voice-related technologies, including text-to-speech, speech-to-text, voice cloning, and AI dubbing, targeting enterprises, creators, and individuals with accessibility needs. Key findings indicate a robust product offering, notable client partnerships with companies such as Twilio and Disney, and significant funding exceeding $800 million, which positions ElevenLabs for substantial growth. However, the preliminary conclusion reveals critical risks, including a lack of transparency regarding financial health, dependency on a limited number of clients, and unverified technology performance claims. These factors necessitate further diligence to validate the company's assertions and assess its sustainability in a competitive market.\n\n## Company Profile\nElevenLabs operates in the Voice AI and Conversational AI sector, providing advanced AI solutions for seamless communication and content creation. The company was founded in 2022 and is based in the United Kingdom. As of today, the legal name and registration number have not been confirmed through Companies House, which raises initial concerns about its corporate governance.\n\n## Product and Technology\nElevenLabs offers a suite of products designed to enhance voice interaction capabilities. Their flagship offerings include:\n\n- **ElevenAgents**: A platform for designing and operating voice agents, featuring a visual builder for non-technical users and programmatic control for developers, as verified in their documentation [1].\n- **ElevenCreative**: A no-code web application for generating voiceovers, music, and dubs directly in the browser, also verified [1].\n- **ElevenAPI**: A REST interface for developers to integrate voice into applications, confirmed through their documentation [1].\n- **Reception.ai**: An AI phone receptionist that manages calls and appointments for small and medium businesses, verified [1].\n\nThe technology claims include ultra-realistic speech generation and support for over 90 languages with a library of more than 10,000 voices, as stated in their blog [2]. However, specific performance metrics or user testimonials to substantiate these claims are lacking, which weakens their credibility.\n\n## Commercial Picture\nThe commercial landscape for ElevenLabs appears promising, with an estimated Annual Recurring Revenue (ARR) of $80 million and a flexible pricing model that includes various tiers ranging from free to custom enterprise solutions [2]. The company has secured significant funding, including a recent $300 million tender offer valuing it at $22 billion, and a $500 million Series D round at an $11 billion valuation [2]. Notably, their client base includes major players like IBM, Disney, and Twilio, indicating strong market validation. However, the absence of detailed financial statements raises concerns about the company's profitability and long-term sustainability.\n\n## Team\nThe founding team consists of Mati Staniszewski (CEO) and Piotr Dabkowski (CTO), both of whom have relevant backgrounds in technology and AI. Staniszewski previously worked at Palantir Technologies, while Dabkowski has experience at Google in machine learning [1]. Their educational backgrounds and previous roles suggest a strong capability to execute the company's strategy. However, further insights into their leadership styles and the broader organizational structure are needed to assess the team's effectiveness fully.\n\n## Debate Summary\nThe debate surrounding ElevenLabs highlighted several strengths and weaknesses. The PRO arguments emphasized the company's strong product offering, notable client partnerships, and significant funding, while the CONTRO case raised concerns about unsubstantiated claims, dependency risks on key clients, and a lack of financial transparency. The judge concluded that while the growth potential is promising, substantial risks and uncertainties regarding financial health and product validation necessitate further diligence.\n\n## Material Risks\nSeveral material risks have been identified:\n\n1. **Unsubstantiated Claims**: The lack of independent validation for technology performance poses a risk to the company's credibility.\n2. **Dependency Risks**: Reliance on a limited number of key clients for revenue could threaten sustainability.\n3. **Market Competition**: Intense competition from established players in the voice AI sector presents a significant threat to ElevenLabs' market position.\n4. **Legal and Compliance Risks**: Insufficient information on security measures and compliance with regulations raises potential legal and reputational risks.\n5. **Financial Transparency**: The absence of detailed financial statements creates uncertainty about the company's financial health.\n\n## Information Gaps and Limits of Evidence\nCritical missing information includes:\n\n- Legal name and registration number from Companies House.\n- Detailed financial statements, including turnover, profit or loss, and balance sheet.\n- Confirmation of annual accounts filing status.\n- Insights into customer satisfaction and retention metrics.\n- Public reviews and competitor market share data.\n\nThese gaps highlight the need for priority questions regarding the company's financial health, client dependency, and technology validation.\n\n## Preliminary Conclusion and Next Steps\nThe evidence presents a mixed picture of ElevenLabs, with promising growth potential tempered by significant risks and uncertainties. Further diligence is warranted to address the critical missing data and validate the company's claims. This should include obtaining detailed financial statements, insights into customer satisfaction, and verification of technology performance. Understanding the competitive landscape and the nature of client partnerships will also be essential for making an informed investment decision.\n\n## Sources\n1. [ElevenLabs Documentation](https://elevenlabs.io/docs/overview/intro) | Accessed: 2023-10-02\n2. [ElevenLabs Blog](https://elevenlabs.io/blog/series-c) | Accessed: 2023-10-02\n3. [ElevenLabs Customer Stories](https://elevenlabs.io/customer-stories) | Accessed: 2023-10-02\n4. [TechCrunch](https://techcrunch.com/2024/10/03/investors-are-scrambling-to-get-into-elevenlabs-which-may-soon-be-valued-at-3-billion) | Accessed: 2023-10-02\n5. [Forbes](https://www.forbes.com/sites/charliefink/2026/01/21/elevenlabs-launches-ai-music-platform-enters-race-with-suno-and-udio) | Accessed: 2023-10-02\n6. [LinkedIn Profile of Piotr Dabkowski](https://www.linkedin.com/in/piotr-dabkowski-50222bba) | Accessed: 2023-10-02\n7. [ElevenLabs Pricing](https://elevenlabs.io/pricing) | Accessed: 2023-10-02",
+    "pending_review": null,
+    "created_at": "2026-11-23T14:25:32+00:00",
+    "updated_at": "2026-11-23T14:30:18+00:00"
+}

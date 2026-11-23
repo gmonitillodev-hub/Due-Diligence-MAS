@@ -1,0 +1,57 @@
+Framework: LangGraph
+
+---------
+
+{
+    "company_info":{
+        "company_name":"Qdrant",
+        "company_site":"https://qdrant.tech/",
+        "company_sector": "Database vettoriali / AI infrastructure"
+    }
+}
+
+-------
+
+
+{
+    "thread_id": "1e14c33b-77dd-42e4-88cb-1600a5ebf9ed",
+    "company_name": "Qdrant",
+    "framework": "langgraph",
+    "status": "completed",
+    "current_node": null,
+    "current_crew": null,
+    "metrics": {
+        "total_time_s": 314.62,
+        "llm_calls": 29,
+        "tokens": {
+            "prompt": 178636,
+            "completion": 15119,
+            "total": 193755
+        },
+        "cost_usd": {
+            "input": 0.026795,
+            "output": 0.009071,
+            "total": 0.035867,
+            "by_model": {
+                "gpt-4o-mini-2024-07-18": {
+                    "input": 0.026795,
+                    "output": 0.009071,
+                    "total": 0.035867
+                }
+            },
+            "unpriced_models": []
+        },
+        "tracing": {
+            "langsmith_enabled": true,
+            "langsmith_project": "due_diligence",
+            "root_run_ids": [
+                "01a208d3-acbe-704f-bab6-fe7d41cf91d5",
+                "01a208e0-4fc2-775b-8f5c-1caa5568f24c"
+            ]
+        }
+    },
+    "memo_markdown": "# Due Diligence Memo — Qdrant\n**Date:** November 23, 2026  \n**Scope:** This memo reviews the product and technology, commercial aspects, and team assessment of Qdrant, with evidence cutoff as of October 5, 2023. It excludes any new research or claims beyond the provided analysis and debate.\n\n## Executive Summary\nQdrant is a Berlin-based startup specializing in high-performance vector similarity search engines, targeting the growing demand for AI infrastructure. The company offers products such as Qdrant Cloud and Qdrant Edge, which facilitate efficient storage, search, and management of high-dimensional vectors. Key findings indicate that Qdrant has a robust technology stack built in Rust, with features supporting real-time indexing and hybrid search capabilities. The company claims an annual revenue of $9.2 million as of May 2024, supported by substantial funding totaling approximately $88.27 million. However, the analysis reveals significant risks, including a lack of independent validation for performance claims, financial transparency issues, and potential gaps in the leadership team's capabilities. The preliminary conclusion suggests that while Qdrant presents a compelling investment opportunity, further diligence is necessary to address these risks and validate the company's claims.\n\n## Company Profile\nQdrant Solutions GmbH, registered in Germany, operates in the AI infrastructure sector, specifically focusing on vector databases. The company has established a notable client base, including HubSpot, Deutsche Telekom, and TripAdvisor, indicating its applicability across various industries. The market for AI applications is expanding, creating a favorable environment for Qdrant's offerings. The company is positioned well against competitors such as FAISS, Pinecone, Weaviate, and Milvus, although it faces challenges from traditional databases that have begun incorporating vector capabilities.\n\n## Product and Technology\nQdrant's core product is a vector search engine that supports real-time retrieval and efficient storage of high-dimensional vectors. The technology is built in Rust, utilizing SIMD and a custom storage engine known as Gridstore, which allows for memory-efficient storage and real-time indexing capabilities [1]. The platform supports hybrid retrieval methods optimized for media with GPU-accelerated indexing, enhancing its performance [2]. Qdrant exposes HTTP and gRPC interfaces for integration with various programming languages, further broadening its accessibility [3]. The company claims compliance with SOC2 and HIPAA standards, which is crucial for enterprise customers handling sensitive data [4]. However, while the technology appears robust, independent validation of its performance claims is lacking, which raises concerns about its credibility.\n\n## Commercial Picture\nQdrant's revenue model is subscription-based, with a reported annual revenue of $9.2 million as of May 2024, based on company claims [5]. The company has received substantial funding, including $28 million in Series A funding in January 2024 and $50 million in Series B funding in March 2026, indicating strong investor confidence [6][7]. The presence of over 29,000 GitHub stars and 250 million downloads across all packages demonstrates significant traction within the developer community [8]. However, the reliance on external funding raises concerns about sustainability, especially in a competitive landscape where established players dominate.\n\n## Team Assessment\nThe founding team of Qdrant consists of experienced professionals in technology and engineering, with a focus on AI infrastructure. Key members include André Zayarni (CEO), Andrey Vasnetsov (CTO), and David Stockton (VP of Engineering), among others [9]. However, detailed backgrounds for these individuals are not available, which may indicate potential gaps in the organizational structure. The lack of information on additional team members, particularly in engineering roles, raises questions about the team's overall capability to execute the company's strategy effectively.\n\n## Debate Summary\nThe debate surrounding Qdrant highlighted both strengths and weaknesses. The PRO arguments emphasized the strong product offering, market timing, and visible traction signals, while the CONTRO arguments raised concerns about technical validation, financial transparency, and the competitive landscape. The judge concluded that while Qdrant presents a compelling investment opportunity, significant risks and evidence gaps necessitate further investigation before proceeding.\n\n## Material Risks\nSeveral material risks have been identified:\n1. **Technical Validation Concerns**: The lack of independent validation for Qdrant's performance claims undermines credibility. This risk could impact customer acquisition and retention.\n2. **Financial Transparency Issues**: The absence of detailed financial statements raises concerns about revenue sustainability and the company's ability to scale.\n3. **Team Capability Risks**: Limited information on the leadership team's backgrounds may hinder confidence in their ability to execute the company's strategy.\n4. **Dependency on External Funding**: The reliance on continuous funding poses a significant risk, particularly if market conditions change or investor confidence wanes.\n\n## Information Gaps and Limits of Evidence\nKey areas requiring further diligence include:\n1. Independent performance validation of Qdrant's technology.\n2. Detailed financial disclosures, including revenue breakdowns and financial statements.\n3. Comprehensive assessments of the leadership team's capabilities and backgrounds.\n4. Specifics on security protocols and compliance measures.\n\n## Preliminary Conclusion and Next Steps\nWhile Qdrant presents a compelling investment opportunity, the significant risks and evidence gaps necessitate further investigation. It is recommended to pursue additional diligence focused on independent validation of technology, detailed financial disclosures, and comprehensive assessments of the leadership team. Addressing these areas will provide a clearer picture of Qdrant's long-term viability and potential for growth.\n\n## Sources\n1. [Qdrant Official Website](https://qdrant.tech/) (Accessed: 2023-10-05)\n2. [Qdrant Documentation](https://qdrant.tech/documentation/) (Accessed: 2023-10-05)\n3. [Qdrant API Reference](https://api.qdrant.tech/api-reference) (Accessed: 2023-10-05)\n4. [Qdrant Pricing Page](https://qdrant.tech/pricing) (Accessed: 2023-10-05)\n5. [Qdrant Blog on Series A Funding Round](https://qdrant.tech/blog/series-a-funding-round)\n6. [Finsmes on Qdrant Seed Funding](https://www.finsmes.com/2023/04/qdrant-raises-7-5m-in-seed-funding.html)\n7. [Finsmes on Qdrant Series B Funding](https://www.finsmes.com/2026/03/qdrant-raises-50m-in-series-b-funding.html)\n8. [Qdrant About Us](https://qdrant.tech/about-us) (Accessed: 2023-10-23)\n9. [Qdrant Customers](https://qdrant.tech/customers/) (Accessed: 2023-10-05)",
+    "pending_review": null,
+    "created_at": "2026-11-23T14:33:39+00:00",
+    "updated_at": "2026-11-23T14:48:52+00:00"
+}

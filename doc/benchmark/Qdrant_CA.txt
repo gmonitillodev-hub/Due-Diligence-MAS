@@ -1,0 +1,199 @@
+Framework: CrewAI
+
+---------
+
+{
+    "company_info":{
+        "company_name":"Qdrant",
+        "company_site":"https://qdrant.tech/",
+        "company_sector": "Database vettoriali / AI infrastructure"
+    }
+}
+
+-------
+
+
+{
+    "thread_id": "5b2923ba-7368-4207-bff0-581c076a6e6f",
+    "company_name": "Qdrant",
+    "framework": "crewai",
+    "status": "completed",
+    "current_node": null,
+    "current_crew": null,
+    "metrics": {
+        "total_time_s": 508.93,
+        "llm_calls": 41,
+        "tokens": {
+            "prompt": 221217,
+            "completion": 22721,
+            "total": 243938
+        },
+        "cost_usd": {
+            "input": 0.033183,
+            "output": 0.013633,
+            "total": 0.046815,
+            "by_model": {
+                "gpt-4o-mini": {
+                    "input": 0.033183,
+                    "output": 0.013633,
+                    "total": 0.046815
+                }
+            },
+            "unpriced_models": []
+        },
+        "crews": [
+            {
+                "name": "Profiler Crew",
+                "duration_s": 264.31,
+                "llm_calls": 25,
+                "tokens": {
+                    "prompt": 163882,
+                    "completion": 11442,
+                    "total": 175324
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 163882,
+                        "completion_tokens": 11442
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.024582,
+                    "output": 0.006865,
+                    "total": 0.031447,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.024582,
+                            "output": 0.006865,
+                            "total": 0.031447
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Analyst Crew",
+                "duration_s": 145.38,
+                "llm_calls": 7,
+                "tokens": {
+                    "prompt": 25453,
+                    "completion": 5841,
+                    "total": 31294
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 25453,
+                        "completion_tokens": 5841
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.003818,
+                    "output": 0.003505,
+                    "total": 0.007323,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.003818,
+                            "output": 0.003505,
+                            "total": 0.007323
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Analysis Review Crew",
+                "duration_s": 12.52,
+                "llm_calls": 3,
+                "tokens": {
+                    "prompt": 14411,
+                    "completion": 360,
+                    "total": 14771
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 14411,
+                        "completion_tokens": 360
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.002162,
+                    "output": 0.000216,
+                    "total": 0.002378,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.002162,
+                            "output": 0.000216,
+                            "total": 0.002378
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Debate Crew",
+                "duration_s": 61.36,
+                "llm_calls": 4,
+                "tokens": {
+                    "prompt": 8686,
+                    "completion": 3673,
+                    "total": 12359
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 8686,
+                        "completion_tokens": 3673
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.001303,
+                    "output": 0.002204,
+                    "total": 0.003507,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.001303,
+                            "output": 0.002204,
+                            "total": 0.003507
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Memo writer Crew",
+                "duration_s": 25.36,
+                "llm_calls": 2,
+                "tokens": {
+                    "prompt": 8785,
+                    "completion": 1405,
+                    "total": 10190
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 8785,
+                        "completion_tokens": 1405
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.001318,
+                    "output": 0.000843,
+                    "total": 0.002161,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.001318,
+                            "output": 0.000843,
+                            "total": 0.002161
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            }
+        ],
+        "tracing": {
+            "crewai_tracing_enabled": true
+        }
+    },
+    "memo_markdown": "# Due Diligence Memo — Qdrant\n**Date:** 2026-11-23  \n**Scope:** This memo reviews the product and technology, commercial analysis, team assessment, and risks associated with Qdrant, with evidence cutoff as of October 1, 2023. It excludes any new research or claims beyond the validated outputs.\n\n## Executive Summary\nQdrant is a high-performance vector search engine designed for AI retrieval and search capabilities, operating within the AI infrastructure sector. The company has developed a comprehensive suite of products, including the Qdrant Vector Search Engine and Qdrant Cloud, aimed at diverse applications across industries such as E-commerce, Legal Tech, and Healthcare. As of October 1, 2023, Qdrant has raised a total of $88.27 million over five funding rounds, with an estimated annual revenue of $1 million for 2023, projected to grow to $9.2 million by May 2024. The company boasts a strong client base, including notable names like HubSpot and Bayer, and has garnered significant community engagement with over 35,000 GitHub stars.\n\nHowever, the investment case faces challenges, particularly due to the lack of independent validation for its technology claims and financial uncertainties. The competitive landscape is crowded, raising concerns about Qdrant's ability to differentiate itself. The preliminary conclusion suggests that while Qdrant presents a promising opportunity, further diligence is necessary to address critical data gaps and validate product performance.\n\n## Company Profile\nFounded in 2021 and headquartered in Berlin, Germany, Qdrant has rapidly expanded to approximately 153 employees. The company is recognized for its innovative approach to vector databases, offering products such as Qdrant Cloud, Qdrant Hybrid Cloud, and Qdrant Enterprise Solutions, all designed to enhance AI applications [1]. The leadership team includes co-founders André Zayarni (CEO) and Andrey Vasnetsov (CTO), both of whom bring extensive experience in software development and machine learning [2].\n\n## Product and Technology\nQdrant's core offering is its vector search engine, built in Rust, which supports real-time indexing and memory-efficient storage. The company claims to provide scalable solutions tailored for production-grade AI applications, although these claims lack independent validation [1]. The API documentation is comprehensive, and the company maintains an active presence on GitHub, with several repositories showcasing its technology [1]. Notably, Qdrant claims compliance with SOC2 and HIPAA standards, further enhancing its credibility in the market [1].\n\n## Commercial Analysis\nQdrant targets a global market with applications across various sectors, including E-commerce, Legal Tech, and Healthcare. The company has established a diverse client base, including major players like HubSpot, Bayer, and TripAdvisor [1]. As of October 1, 2023, Qdrant's total funding stands at $88.27 million, with a verified annual revenue of $1 million for 2023 and an estimated revenue projection of $9.2 million for May 2024 [1][2]. However, the commercial landscape presents risks, including a competitive environment and reliance on a few key clients, which could impact revenue stability [1].\n\n## Team Assessment\nThe leadership team at Qdrant is composed of experienced professionals, including COO Manuel Meyer and VP of Engineering David Stockton, who contribute to the company's strategic direction [2]. The founders' backgrounds in software development and product management are significant assets, although the absence of a proven track record in scaling similar ventures raises concerns about future growth [2].\n\n## Debate Summary\nThe debate surrounding Qdrant's investment case highlighted several strengths and weaknesses. The PRO arguments emphasized the strong product offering, attractive market position, and visible traction signals, while the CONTRO arguments pointed out the lack of independent validation, competitive risks, and financial uncertainties. The judge concluded that while Qdrant has a compelling narrative, the absence of critical supporting data and the presence of significant risks necessitate further diligence before proceeding with an investment.\n\n## Material Risks\nSeveral key risks have been identified in relation to Qdrant:\n1. **Lack of Independent Validation**: The absence of benchmarking data for product performance undermines the strength of the product offering, potentially impacting investor confidence.\n2. **Competitive Landscape**: The crowded vector database market poses a significant risk, with established competitors potentially overshadowing Qdrant's growth unless clear differentiation is established.\n3. **Financial Uncertainty**: The lack of detailed financial statements complicates the assessment of the company's financial health, raising concerns about sustainability.\n4. **Client Dependency**: Reliance on a few key clients without clear retention metrics raises concerns about revenue stability and sustainability.\n\n## Information Gaps and Limits of Evidence\nCritical information gaps include:\n- Detailed financial statements, including profit/loss and balance sheet data.\n- Independent validation or benchmarking data for product performance.\n- Client retention rates and contract durations.\n- Specific amounts for earlier funding rounds.\n- Information on pricing strategy and customer acquisition costs.\n\nThese gaps necessitate priority questions regarding the company's financial health and operational metrics.\n\n## Preliminary Conclusion and Next Steps\nThe evidence suggests that while Qdrant presents a promising investment opportunity, significant risks and information gaps warrant further diligence. It is recommended to pursue additional investigations into the company's financial health, client retention metrics, and independent validation of product performance. Addressing these areas will be crucial in determining the viability of an investment in Qdrant.\n\n## Sources\n1. Qdrant Official Website, [Qdrant](https://qdrant.tech/), Access Date: 2023-10-01\n2. PitchBook, [PitchBook](https://pitchbook.com/profiles/company/489063-43), Access Date: 2023-10-01\n3. Tavily, [Tavily](https://tavily.com/knowledge/company/13zJl6PzNqV7), Access Date: 2023-10-01\n4. Latka, [Latka](https://getlatka.com/companies/qdrant.tech), Access Date: 2023-10-01\n5. About Us, [About Us](https://qdrant.tech/about-us), Access Date: 2023-10-01\n6. LinkedIn, [LinkedIn](https://www.linkedin.com/company/qdrant), Access Date: 2023-10-01\n7. Unusual Ventures, [Unusual Ventures](https://www.unusual.vc/why-we-led-qdrants-7-5m-seed-round), Access Date: 2023-10-01\n8. Qdrant GitHub, [Qdrant GitHub](https://github.com/qdrant/qdrant), Access Date: 2023-10-01",
+    "pending_review": null,
+    "created_at": "2026-11-23T14:54:48+00:00",
+    "updated_at": "2026-11-23T15:04:11+00:00"
+}

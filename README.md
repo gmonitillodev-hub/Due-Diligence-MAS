@@ -1,12 +1,24 @@
 # Due Diligence MAS
 
-Multi-agent system that produces a startup due diligence memo. It compares CrewAI and LangGraph; the CrewAI implementation lives in `src/due_diligence_mas/crewai_fr`.
+Multi-agent system that produces a startup due diligence memo. It implements the same workflow in two frameworks, **CrewAI** and **LangGraph**, to compare them.
 
-**Input:** startup name, website, sector, additional info → **Output:** a Markdown memo with profile, specialist analyses and debate findings.
+**Input:** startup name, website, sector, additional info → **Output:** a Markdown memo with profile, specialist analyses and, optionally, debate findings.
 
-## Flow
+## Overview
 
-Profiling → specialist analysis (tech, commercial, team) → human approval → debate (risk vs. opportunity) → memo.
+1. **Profiling** — company profile and information gaps.
+2. **Analysis** — Tech, Commercial and Team specialists run in parallel, then one aggregation.
+3. **Analysis review** — a reviewer scores the analysis (0–10) and may create follow-up tasks through an MCP server.
+4. **Human review** — the user chooses `proceed` (run Debate) or `end` (skip it).
+5. **Debate** (optional) — Pro vs. Contra extractors, judged.
+6. **Memo** — final formatted memo.
+
+| Aspect | Choice |
+| --- | --- |
+| Orchestration patterns | Debate/adversarial, Supervisor, Sequential |
+| Agentic paradigms | ReAct; Reflexion (LangGraph Supervisor) |
+| CrewAI | Version 2 under test; Version 1 discarded ([open points](doc/open_points.md)) |
+| Persistence | LangGraph: SQLite; CrewAI: to do |
 
 ## Setup
 
@@ -25,36 +37,32 @@ poetry run langgraph-server  # LangGraph REST server, http://127.0.0.1:8000
 poetry run task-server       # Task manager MCP server (stdio)
 ```
 
-### Task manager MCP server
-
-Exposes the `get_users` and `create_task` tools. Each created task is saved as `<task_id>.json` in `src/due_diligence_mas/mcp/tasks/`.
-
-Inspect and test the tools with the MCP Inspector (requires Node.js):
-
-```bash
-poetry run mcp dev src/due_diligence_mas/mcp/task_manager.py
-```
-
-The default transport is stdio: the client (e.g. the agents) must spawn the server as a subprocess, which also works inside a single Colab notebook.
-
-To run the CrewAI flow from the terminal (it prompts for the company details, then asks for approval before the debate phase):
+CrewAI flow from the terminal (prompts for company details, then asks for approval before the debate):
 
 ```bash
 poetry run python -m due_diligence_mas.mas_definition.crewai_fr.flows.due_diligence
 ```
 
+Operations and MCP details: [REST API](doc/rest_api.md), [MCP Server](doc/mcp_task_server.md).
+
 ## Layout
 
 | Path | Content |
 | --- | --- |
-| `src/due_diligence_mas/classes` | Shared typed models (`CompanyInfo`, `CompanyProfile`, `ProfiledCompany`) |
-| `src/due_diligence_mas/crewai_fr` | Flow, crews, agents, tools |
-| `src/due_diligence_mas/constants` | Agent and tool definitions |
-| `src/due_diligence_mas/providers` | LLM provider |
+| `src/due_diligence_mas/mas_definition/agents` | Shared agent classes and framework adapters |
+| `src/due_diligence_mas/mas_definition/constants` | Agent, tool and review definitions |
+| `src/due_diligence_mas/mas_definition/classes` | Shared models (`CompanyInfo`, `CompanyProfile`, `ProfiledCompany`, `AnalysisReview`) |
+| `src/due_diligence_mas/mas_definition/crewai_fr` | CrewAI flow and crews |
+| `src/due_diligence_mas/mas_definition/langgraph` | LangGraph graph and nodes |
+| `src/due_diligence_mas/mas_definition/tools` | Search, LinkedIn, GitHub and MCP tools |
+| `src/due_diligence_mas/api_gateway` | REST servers |
+| `src/due_diligence_mas/mcp` | Task manager MCP server |
 
 ## Docs
 
-- [Overview](doc/due_diligence_overview.md)
-- [Architecture](doc/due_diligence_architecture.md)
-- [Open points](doc/due_diligence_open_points%20(1).md)
-- [Benchmark registry](doc/due_diligence_benchmark_registry.md)
+- [Architecture](doc/architecture.md)
+- [Open points](doc/open_points.md)
+- [State, persistence and observability](doc/runtime.md)
+- [REST API](doc/rest_api.md)
+- [MCP Server](doc/mcp_task_server.md)
+- [Benchmark registry](doc/benchmark_registry.md)

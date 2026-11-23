@@ -1,0 +1,198 @@
+Framework: CrewAi
+
+---------
+
+{
+    "company_info":{
+        "company_name":"ElevenLabs",
+        "company_site":"https://elevenlabs.io/",
+        "company_sector": "Voice AI / Conversational AI"
+    }
+}
+
+---------
+
+{
+    "thread_id": "1dd4d4a8-d2b1-491b-80df-22abde589482",
+    "company_name": "ElevenLabs",
+    "framework": "crewai",
+    "status": "completed",
+    "current_node": null,
+    "current_crew": null,
+    "metrics": {
+        "total_time_s": 328.87,
+        "llm_calls": 32,
+        "tokens": {
+            "prompt": 121049,
+            "completion": 16721,
+            "total": 137770
+        },
+        "cost_usd": {
+            "input": 0.018157,
+            "output": 0.010033,
+            "total": 0.02819,
+            "by_model": {
+                "gpt-4o-mini": {
+                    "input": 0.018157,
+                    "output": 0.010033,
+                    "total": 0.02819
+                }
+            },
+            "unpriced_models": []
+        },
+        "crews": [
+            {
+                "name": "Profiler Crew",
+                "duration_s": 86.91,
+                "llm_calls": 14,
+                "tokens": {
+                    "prompt": 46478,
+                    "completion": 4567,
+                    "total": 51045
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 46478,
+                        "completion_tokens": 4567
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.006972,
+                    "output": 0.00274,
+                    "total": 0.009712,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.006972,
+                            "output": 0.00274,
+                            "total": 0.009712
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Analyst Crew",
+                "duration_s": 136.75,
+                "llm_calls": 9,
+                "tokens": {
+                    "prompt": 38942,
+                    "completion": 5969,
+                    "total": 44911
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 38942,
+                        "completion_tokens": 5969
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.005841,
+                    "output": 0.003581,
+                    "total": 0.009423,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.005841,
+                            "output": 0.003581,
+                            "total": 0.009423
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Analysis Review Crew",
+                "duration_s": 12.45,
+                "llm_calls": 3,
+                "tokens": {
+                    "prompt": 15876,
+                    "completion": 410,
+                    "total": 16286
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 15876,
+                        "completion_tokens": 410
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.002381,
+                    "output": 0.000246,
+                    "total": 0.002627,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.002381,
+                            "output": 0.000246,
+                            "total": 0.002627
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Debate Crew",
+                "duration_s": 57.81,
+                "llm_calls": 4,
+                "tokens": {
+                    "prompt": 9754,
+                    "completion": 4030,
+                    "total": 13784
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 9754,
+                        "completion_tokens": 4030
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.001463,
+                    "output": 0.002418,
+                    "total": 0.003881,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.001463,
+                            "output": 0.002418,
+                            "total": 0.003881
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Memo writer Crew",
+                "duration_s": 34.95,
+                "llm_calls": 2,
+                "tokens": {
+                    "prompt": 9999,
+                    "completion": 1745,
+                    "total": 11744
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 9999,
+                        "completion_tokens": 1745
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.0015,
+                    "output": 0.001047,
+                    "total": 0.002547,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.0015,
+                            "output": 0.001047,
+                            "total": 0.002547
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            }
+        ],
+        "tracing": {
+            "crewai_tracing_enabled": true
+        }
+    },
+    "memo_markdown": "# Due Diligence Memo — ElevenLabs, Inc.\n**Date:** November 23, 2026  \n**Scope:** This memo reviews the product and technology, commercial aspects, and team evaluation of ElevenLabs, Inc., with evidence cut off as of November 2026. It excludes any new research or claims not substantiated by the analysis.\n\n## Executive Summary\nElevenLabs, Inc. is a rapidly growing startup in the Voice AI and Conversational AI sector, founded in 2022 and headquartered in New York, with a significant presence in London. The company specializes in advanced voice solutions, offering a suite of products that includes APIs for text-to-speech, speech-to-text, voice cloning, and more. As of September 2026, ElevenLabs reported an annual recurring revenue (ARR) of $600 million, reflecting a remarkable growth rate of 200% year-over-year. The company has attracted notable clients such as Twilio, The Walt Disney Studios, and Nvidia, indicating strong market validation. However, the analysis reveals several areas of concern, including the lack of detailed customer references, unverified claims regarding technical capabilities, and missing financial filings, which raise questions about the sustainability of its growth and operational risks. The preliminary conclusion suggests that while ElevenLabs shows significant potential, further diligence is necessary to address critical gaps in financial transparency, customer validation, and technical documentation.\n\n## Company Profile\nElevenLabs, Inc. is a legal entity registered in the United States, focusing on transforming human-technology interaction through innovative voice AI solutions. The company has made substantial strides in the Voice AI sector, with a reported valuation of $22 billion as of September 2026, following a $561 million Series D funding round led by Sequoia Capital in February 2026. The company’s offerings include ElevenCreative, ElevenAgents, and various APIs for voice-related services, which are designed to cater to enterprises, creators, and developers globally. Notably, ElevenLabs emphasizes its commitment to AI safety and responsible innovation, which is increasingly important in the industry.\n\n## Product and Technology\nElevenLabs claims to have developed advanced voice models, including the first human-like voice model, although this claim lacks independent verification. The company provides comprehensive API documentation, which includes guides and code examples, and maintains an official GitHub organization with multiple repositories for SDKs in Python, JavaScript, and .NET. However, specific metrics regarding the GitHub repositories, such as stars and forks, were not detailed in the findings. Additionally, while ElevenLabs asserts that it offers enterprise plans with dedicated support and SOC 2 compliance, there is limited information regarding the technical dependencies of its APIs and services. The absence of data on the replicability of their voice models poses a risk if competitors can easily replicate their technology.\n\n## Commercial Picture\nThe commercial analysis indicates that ElevenLabs operates in a competitive market, facing direct competition from established players like Google Cloud Text-to-Speech, Amazon Polly, and Microsoft Azure Speech. The company has reported impressive financial metrics, with an ARR of $600 million as of September 2026, up from $200 million in September 2025. This growth is supported by substantial funding, totaling approximately $781 million across five funding rounds. However, the lack of detailed financial filings raises concerns about the accuracy of these figures. The pricing structure for ElevenLabs' services ranges from a free tier to a business plan priced at $990 per month, catering to various customer needs.\n\n## Team Evaluation\nThe founding team of ElevenLabs includes Mati Staniszewski, the CEO, and Piotr Dabkowski, the CTO, both of whom have strong backgrounds in technology and AI. The company employs approximately 1,516 individuals as of September 2023, operating with a micro-team structure that allows for agility and quick decision-making. While the company promotes a high-performance culture, there is limited information available regarding the broader team and their roles, as well as any advisors or investors associated with the company. This lack of transparency raises questions about team expertise and potential risks related to turnover and burnout.\n\n## Debate Summary\nThe debate surrounding ElevenLabs highlighted several strengths and weaknesses. The PRO arguments emphasized the company's strong market position, impressive financial metrics, substantial funding, and robust product offerings. However, the CONTRO arguments raised valid concerns regarding the lack of detailed customer references, financial transparency, and the unverified nature of technical claims. The judge concluded that while the company shows significant potential, the risks associated with financial transparency and technical defensibility warrant further investigation.\n\n## Material Risks\nThe analysis identifies several material risks associated with ElevenLabs. The lack of detailed financial filings raises concerns about the accuracy of reported figures, which could indicate financial mismanagement. Additionally, the absence of customer references undermines the strength of client relationships, suggesting potential volatility in revenue. The unverified claims regarding technical capabilities pose risks, as competitors could easily replicate their offerings. Furthermore, the increasing competition in the Voice AI market raises concerns about ElevenLabs' ability to maintain its market position. Addressing these risks will require further diligence, particularly in the areas of financial transparency, customer validation, and technical documentation.\n\n## Information Gaps and Limits of Evidence\nSeveral critical information gaps were identified during the analysis. These include the lack of detailed financial filings, customer references or case studies, and technical documentation to understand product defensibility. Additionally, there is limited information on team composition beyond the founders, as well as insights into strategic guidance from advisors or investors. The priority questions for further investigation include verifying financial health, validating client relationships, and assessing the replicability of technology.\n\n## Preliminary Conclusion and Next Steps\nIn conclusion, while ElevenLabs demonstrates significant growth potential and a strong market position, the evidence also reveals substantial risks related to financial transparency, technical defensibility, and competitive pressures. Therefore, further diligence is justified, particularly in the areas of financial transparency, customer validation, technical documentation, and competitive analysis. Addressing these critical gaps will be essential for making an informed investment decision regarding ElevenLabs, Inc.\n\n## Sources\n1. [elevenlabs.io](https://elevenlabs.io/) | Access Date: 2023-10-01 | Verified\n2. [About Page](https://elevenlabs.io/about) | Access Date: 2023-10-01 | Verified\n3. [API Documentation](https://elevenlabs.io/docs/api-reference/introduction) | Access Date: 2023-10-01 | Verified\n4. [GitHub ElevenLabs](https://github.com/elevenlabs) | Access Date: 2023-10-01 | Verified\n5. [API Overview](https://elevenlabs.io/api) | Access Date: 2023-10-01 | Company Claim\n6. [Latka](https://getlatka.com/companies/elevenlabs.io) | Access Date: 2026-11-10 | Verified\n7. [Darkroom Agency](https://www.darkroomagency.com/observatory/how-elevenlabs-grew-to-a-22b-valuation) | Access Date: 2026-11-10 | Verified\n8. [Crunchbase](https://news.crunchbase.com/venture/voice-ai-startup-funding-peaks-2026) | Access Date: 2026-11-18 | Verified\n9. [CloudZero](https://www.cloudzero.com/blog/elevenlabs-pricing) | Access Date: 2026-11-10 | Verified\n10. [LinkedIn](https://www.linkedin.com/posts/paulschmitt2205_mati-staniszewski-co-founder-and-ceo-of-activity-7420381345203298304-DzMa) | Access Date: 2023-10-01 | To be confirmed\n11. [Tracxn](https://tracxn.com/d/companies/elevenlabs/__Tvkv2vcQvT5RiO80KqXicawZyFtA-r7-J533YWuiDrM) | Access Date: 2023-10-01 | Verified\n12. [Business Insider](https://www.businessinsider.com/elevenlabs-micro-team-hire-interview-voice-cloning-ai-staniszewski-2025) | Access Date: 2023-10-01 | Verified\n13. [ElevenLabs Careers](https://elevenlabs.io/careers) | Access Date: 2023-10-01 | Verified",
+    "pending_review": null,
+    "created_at": "2026-11-23T15:07:18+00:00",
+    "updated_at": "2026-11-23T15:14:36+00:00"
+}

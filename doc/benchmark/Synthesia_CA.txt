@@ -1,0 +1,198 @@
+Framework: CrewAi
+
+---------
+
+{
+    "company_info":{
+        "company_name":"Synthesia",
+        "company_site":"https://www.synthesia.io/it",
+        "company_sector":"AI video / Enterprise SaaS"
+    }
+}
+
+---------
+
+{
+    "thread_id": "2d3c3dbe-f34a-452a-b85f-4c3c21e191d6",
+    "company_name": "Synthesia",
+    "framework": "crewai",
+    "status": "completed",
+    "current_node": null,
+    "current_crew": null,
+    "metrics": {
+        "total_time_s": 358.87,
+        "llm_calls": 30,
+        "tokens": {
+            "prompt": 182329,
+            "completion": 17146,
+            "total": 199475
+        },
+        "cost_usd": {
+            "input": 0.027349,
+            "output": 0.010288,
+            "total": 0.037637,
+            "by_model": {
+                "gpt-4o-mini": {
+                    "input": 0.027349,
+                    "output": 0.010288,
+                    "total": 0.037637
+                }
+            },
+            "unpriced_models": []
+        },
+        "crews": [
+            {
+                "name": "Profiler Crew",
+                "duration_s": 75.13,
+                "llm_calls": 12,
+                "tokens": {
+                    "prompt": 37538,
+                    "completion": 3926,
+                    "total": 41464
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 37538,
+                        "completion_tokens": 3926
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.005631,
+                    "output": 0.002356,
+                    "total": 0.007986,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.005631,
+                            "output": 0.002356,
+                            "total": 0.007986
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Analyst Crew",
+                "duration_s": 165.02,
+                "llm_calls": 9,
+                "tokens": {
+                    "prompt": 106333,
+                    "completion": 6722,
+                    "total": 113055
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 106333,
+                        "completion_tokens": 6722
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.01595,
+                    "output": 0.004033,
+                    "total": 0.019983,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.01595,
+                            "output": 0.004033,
+                            "total": 0.019983
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Analysis Review Crew",
+                "duration_s": 12.4,
+                "llm_calls": 3,
+                "tokens": {
+                    "prompt": 17716,
+                    "completion": 406,
+                    "total": 18122
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 17716,
+                        "completion_tokens": 406
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.002657,
+                    "output": 0.000244,
+                    "total": 0.002901,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.002657,
+                            "output": 0.000244,
+                            "total": 0.002901
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Debate Crew",
+                "duration_s": 70.41,
+                "llm_calls": 4,
+                "tokens": {
+                    "prompt": 10405,
+                    "completion": 4345,
+                    "total": 14750
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 10405,
+                        "completion_tokens": 4345
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.001561,
+                    "output": 0.002607,
+                    "total": 0.004168,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.001561,
+                            "output": 0.002607,
+                            "total": 0.004168
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            },
+            {
+                "name": "Memo writer Crew",
+                "duration_s": 35.91,
+                "llm_calls": 2,
+                "tokens": {
+                    "prompt": 10337,
+                    "completion": 1747,
+                    "total": 12084
+                },
+                "models": {
+                    "gpt-4o-mini": {
+                        "prompt_tokens": 10337,
+                        "completion_tokens": 1747
+                    }
+                },
+                "cost_usd": {
+                    "input": 0.001551,
+                    "output": 0.001048,
+                    "total": 0.002599,
+                    "by_model": {
+                        "gpt-4o-mini": {
+                            "input": 0.001551,
+                            "output": 0.001048,
+                            "total": 0.002599
+                        }
+                    },
+                    "unpriced_models": []
+                }
+            }
+        ],
+        "tracing": {
+            "crewai_tracing_enabled": true
+        }
+    },
+    "memo_markdown": "# Due Diligence Memo — Synthesia\n**Date:** November 23, 2026  \n**Scope:** This memo reviews the product and technology, commercial analysis, team assessment, and risks associated with Synthesia. The evidence cutoff is October 1, 2023, and the analysis excludes any new research or claims beyond the provided data.\n\n## Executive Summary\nSynthesia is an AI video generation platform that enables users to create videos from text, documents, or presentations, catering primarily to enterprise clients. The company has demonstrated significant growth, with a reported turnover of £58 million for the year ending December 2024, reflecting an 82.2% increase from the previous year. It serves over 65,000 businesses globally, including 90% of Fortune 100 companies, indicating strong market validation and customer satisfaction. However, the company has reported substantial pre-tax losses of £59 million, raising concerns about its financial sustainability. The technology behind Synthesia is robust, featuring AI-driven video generation and interactive avatars, but there are gaps in technical documentation and user feedback on performance. The debate surrounding Synthesia highlighted both its growth potential and the risks associated with competition and financial uncertainty. Overall, while Synthesia presents a compelling investment opportunity, significant uncertainties remain that warrant further investigation before proceeding.\n\n## Company Profile\nFounded in 2017, Synthesia has rapidly established itself as a leader in the AI video generation market, providing a platform that allows users to create videos efficiently. The company claims to serve over 50,000 global clients, including major corporations such as Teleperformance and Reuters, and has received positive feedback with an average rating of 5 out of 5 stars from over 1,000 reviews on G2 [1]. The platform's features include video localization, translation, and interactive avatars, which enhance user engagement and content accessibility [2].\n\n## Product and Technology\nSynthesia's technology is characterized by its AI-driven video generation capabilities, which include voice cloning and real-time interactions with avatars. The platform is designed for scalability, allowing users to manage large volumes of content effectively [3]. It integrates seamlessly with Learning Management Systems (LMS) and offers SCORM export capabilities, making it suitable for corporate training environments [4]. The company holds several certifications, including SOC 2 Type II and ISO 27001, ensuring compliance with data security regulations, which is crucial for enterprise clients [5]. However, there is a notable lack of detailed technical documentation regarding the underlying AI models and algorithms used for video generation, which limits the assessment of the product's robustness [6].\n\n## Commercial Analysis\nThe commercial landscape for Synthesia is promising, with a growing demand for video content in corporate training and marketing. The company reported a turnover of £58 million for 2024, up from £32 million in 2023, with projections indicating a revenue of $113.2 million for 2025 [7]. Despite this growth, the company faces challenges, including significant pre-tax losses and increasing competition in the AI video generation space. The pricing structure is tiered, catering to a wide range of customers, from free users to enterprise clients [8]. However, there is limited information on recent funding rounds and investor details, which could impact future financial stability [9].\n\n## Team Assessment\nSynthesia's leadership team includes co-founders Lourdes Agapito and Matthias Niessner, both of whom have strong academic backgrounds in AI and computer vision [10]. Victor Riparbelli serves as CEO, bringing entrepreneurial experience, while Steffen Tjerrild, the COO, has a solid background in operations and finance [11]. The Chief Technology Officer, Peter Hill, has extensive experience in technology leadership, although further verification of his background is needed due to multiple individuals with the same name [12]. The team appears capable, but there is insufficient information on the broader team structure and recent hiring trends, which raises questions about the company's capacity to execute its growth strategies [13].\n\n## Debate Summary\nThe debate surrounding Synthesia's investment case highlighted several strengths, including strong market demand, impressive client traction, and a comprehensive product offering. However, concerns were raised regarding market competition, client retention, and financial uncertainty. The judge concluded that while Synthesia presents a compelling investment opportunity, significant uncertainties and risks remain that must be thoroughly investigated before proceeding.\n\n## Material Risks\nSynthesia faces several material risks that could impact its investment appeal. The significant pre-tax losses of £59 million raise concerns about profitability and potential funding requirements, which could dilute investor equity. Additionally, the competitive landscape is intensifying, with rapid advancements in AI technology posing a threat to Synthesia's market share. The lack of detailed technical documentation and user feedback on performance further complicates the risk assessment [14]. \n\n## Information Gaps and Limits of Evidence\nSeveral critical information gaps exist that need to be addressed:\n1. Detailed technical documentation regarding AI models and algorithms.\n2. User feedback on technical performance and client retention data.\n3. Specific details on recent funding rounds and investor information.\n4. Access to the latest financial documents filed with Companies House.\n5. Broader team structure and additional key hires.\n\nThese gaps must be prioritized for further investigation to mitigate risks and enhance the overall assessment of Synthesia's viability as an investment opportunity.\n\n## Preliminary Conclusion and Next Steps\nWhile the evidence indicates that Synthesia has strong growth potential and a solid market position, the significant financial losses and lack of critical data present substantial risks. Further diligence is recommended to address the identified information gaps, particularly regarding technical documentation, user feedback, and financial health. This additional investigation is essential to make a more informed investment decision.\n\n## Sources\n1. Synthesia Official Website - [synthesia.io](https://www.synthesia.io) - Access Date: 2023-10-01  \n2. Synthesia Pricing - [synthesia.io/pricing](https://www.synthesia.io/pricing) - Access Date: 2023-10-01  \n3. Synthesia Security - [security.synthesia.io](https://security.synthesia.io/) - Access Date: 2023-10-01  \n4. Synthesia API Documentation - [developers.synthesia.io/docs/introduction](https://developers.synthesia.io/docs/introduction) - Access Date: 2023-10-01  \n5. Wikipedia - [en.wikipedia.org/wiki/Synthesia_(company)](https://en.wikipedia.org/wiki/Synthesia_(company)) - Access Date: 2023-10-01  \n6. Spark Intel - [spark-intel.co.uk/companies/synthesia](https://www.spark-intel.co.uk/companies/synthesia) - Accessed 2026-09-28  \n7. Companies History - [companieshistory.com/synthesia-revenue](https://www.companieshistory.com/synthesia-revenue) - Accessed 2026-09-22  \n8. Use Velo - [usevelo.ai/blog/synthesia-pricing](https://usevelo.ai/blog/synthesia-pricing) - Accessed 2026-08-05  \n9. ETEC522 - [blogs.ubc.ca/etec522/2024/01/30/founders-parade-synthesia](https://blogs.ubc.ca/etec522/2024/01/30/founders-parade-synthesia) - Access Date: 2023-10-01  \n10. LinkedIn - [linkedin.com/in/lourdes-agapito-b025812b](https://linkedin.com/in/lourdes-agapito-b025812b) - Access Date: 2023-10-01  \n11. LinkedIn - [linkedin.com/in/matthias-niessner-a0a43a48](https://linkedin.com/in/matthias-niessner-a0a43a48) - Access Date: 2023-10-01  \n12. LinkedIn - [linkedin.com/in/victorriparbelli](https://linkedin.com/in/victorriparbelli) - Access Date: 2023-10-01  \n13. LinkedIn - [linkedin.com/in/steffentjerrild](https://linkedin.com/in/steffentjerrild) - Access Date: 2023-10-01  \n14. LinkedIn - [linkedin.com/in/powder8](https://linkedin.com/in/powder8) - Access Date: 2023-10-01  ",
+    "pending_review": null,
+    "created_at": "2026-11-23T15:18:54+00:00",
+    "updated_at": "2026-11-23T15:28:56+00:00"
+}
