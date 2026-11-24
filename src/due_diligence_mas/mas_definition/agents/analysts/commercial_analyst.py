@@ -1,4 +1,4 @@
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.research import CONTEXT_FIRST
 
@@ -22,7 +22,7 @@ def _numbered(items: list[str]) -> str:
     return " ".join(f"{i}) {s}" for i, s in enumerate(items, 1))
 
 
-class CommercialAnalyst_Agent(SpecAgent):
+class CommercialAnalyst_Agent(DDAgent):
     name = AgentName.COMMERCIAL_ANALYST
     tools = ("tavily_search", "tavily_funding_search", "tavily_page_extractor",)
 

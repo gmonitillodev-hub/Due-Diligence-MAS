@@ -1,8 +1,8 @@
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 
 
-class DebateFormatter_Agent(SpecAgent):
+class DebateFormatter_Agent(DDAgent):
     name = AgentName.DEBATE_FORMATTER
 
     tasks_def = {

@@ -41,6 +41,19 @@ SEARCH_CONFIGS = {
 
 
 MAX_CONTENT_CHARS = 10000
+BLOCKING_ERROR_CODES = ("401", "429", "432", "433")
+
+
+class TavilyBlockingError(RuntimeError):
+    """Tavily refuses every request (invalid key, rate or plan limit): retrying cannot work."""
+
+
+def _raise_on_blocking_error(output):
+    """langchain_tavily returns API errors as {"error": exception} text for the model, which retries until the tool call limit. Account level errors are raised instead; query errors (400) stay with the model."""
+    error = output.get("error") if isinstance(output, dict) else None
+    if error is not None and any(f"Error {code}" in str(error) for code in BLOCKING_ERROR_CODES):
+        raise TavilyBlockingError(str(error))
+    return output
 
 
 def _truncate_results(output, max_chars: int = MAX_CONTENT_CHARS):
@@ -55,12 +68,12 @@ def _truncate_results(output, max_chars: int = MAX_CONTENT_CHARS):
 
 class _TruncatedTavilySearch(TavilySearch):
     def _run(self, *args, **kwargs):
-        return _truncate_results(super()._run(*args, **kwargs))
+        return _truncate_results(_raise_on_blocking_error(super()._run(*args, **kwargs)))
 
 
 class _TruncatedTavilyExtract(TavilyExtract):
     def _run(self, *args, **kwargs):
-        return _truncate_results(super()._run(*args, **kwargs))
+        return _truncate_results(_raise_on_blocking_error(super()._run(*args, **kwargs)))
 
 
 def _tool_classes(framework: Framework):

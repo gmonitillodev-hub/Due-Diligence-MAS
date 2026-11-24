@@ -4,7 +4,7 @@ import time
 from crewai import Agent, Crew, Process, Task
 from crewai.llms.base_llm import BaseLLM
 
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent
 from due_diligence_mas.mas_definition.crewai_fr.utils import is_verbose
 from due_diligence_mas.mas_definition.utils.llm_cost import summarize_cost
 from due_diligence_mas.utils.logger import log_crew
@@ -18,7 +18,7 @@ class BaseCrew:
 
     name: str = "Crew"
     process: Process = Process.sequential
-    manager: Optional[SpecAgent] = None
+    manager: Optional[DDAgent] = None
 
     def __init__(self):
         self.crew_agents: list[Agent] = []
@@ -28,7 +28,7 @@ class BaseCrew:
     def _setup(self):
         raise NotImplementedError
 
-    def add(self, agent: SpecAgent, topic, *, context: Optional[list[Task]] = None, key: str = "main") -> SpecAgent:
+    def add(self, agent: DDAgent, topic, *, context: Optional[list[Task]] = None, key: str = "main") -> DDAgent:
         """Register the agent and build its tasks; the task context is decided by the calling crew."""
         agent.build_tasks(topic, context=context, key=key)
         self.crew_agents.append(agent.get_agent())

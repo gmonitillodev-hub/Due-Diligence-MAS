@@ -1,8 +1,8 @@
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 
 
-class AnalystSupervisor(SpecAgent):
+class AnalystSupervisor(DDAgent):
     name = AgentName.ANALYST_SUPERVISOR
     delegation = True
 

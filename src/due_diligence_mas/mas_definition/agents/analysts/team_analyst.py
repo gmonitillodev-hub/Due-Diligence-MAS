@@ -1,9 +1,9 @@
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.research import ANALYST_REPORT_FORMAT, CONTEXT_FIRST
 
 
-class TeamAnalyst_Agent(SpecAgent):
+class TeamAnalyst_Agent(DDAgent):
     name = AgentName.TEAM_ANALYST
     tools = ("tavily_search", "linkedin", "tavily_page_extractor",)
 

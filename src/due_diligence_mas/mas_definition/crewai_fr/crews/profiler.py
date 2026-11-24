@@ -43,10 +43,7 @@ class ProfilerCrew(BaseCrew):
         return f"{counts} total={sum(counts.values())}"
 
     def _log_executions(self, result):
-        """Print the size of each delegated execution next to the manager's final profile."""
+        """Print the entry counts of the manager's final profile."""
         print(f"\n{'-'*80}")
-        print(f"  Profiler executions: {len(self.profiler.raw_outputs)}")
-        for i, output in enumerate(self.profiler.raw_outputs, 1):
-            print(f"    Execution {i}: {len(output)} chars")
         print(f"  Final profile (manager): {self._entry_counts(result)}")
         print(f"{'-'*80}\n")

@@ -1,5 +1,5 @@
 from due_diligence_mas.mas_definition.agents.analysts.analyst_supervisor import AnalystSupervisor
-from due_diligence_mas.mas_definition.agents.spec import TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import TaskDef
 from due_diligence_mas.mas_definition.classes.company import AnalysisReview
 from due_diligence_mas.mas_definition.constants.review import ANALYSIS_REVIEW_CRITERIA, TASK_CREATION_INSTRUCTIONS
 

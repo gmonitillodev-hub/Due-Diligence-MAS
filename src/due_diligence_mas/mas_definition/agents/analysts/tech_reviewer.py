@@ -1,9 +1,9 @@
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.research import ANALYST_REPORT_FORMAT, CONTEXT_FIRST
 
 
-class TechReviewer_Agent(SpecAgent):
+class TechReviewer_Agent(DDAgent):
     name = AgentName.TECH_REVIEWER
     tools = ("tavily_search", "github_repos", "tavily_page_extractor",)
 

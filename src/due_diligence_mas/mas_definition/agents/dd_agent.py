@@ -3,7 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from due_diligence_mas.mas_definition.agents import BaseAgent
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 from due_diligence_mas.mas_definition.constants.common import Framework
 from due_diligence_mas.mas_definition.utils.backstory_builder import backstory_builder
@@ -21,7 +20,7 @@ class TaskDef:
     tools: tuple[str, ...] = ()
 
 
-class SpecAgent(BaseAgent):
+class DDAgent:
     """
     Agent defined only by data: subclasses set the class attributes, the framework adapters build the objects.
 

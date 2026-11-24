@@ -49,7 +49,7 @@ def build_agent(definition, task):
         response_format=ToolStrategy(output_schema) if output_schema else None,
         middleware=_limit_middleware(definition),
         name=agent_slug(definition.spec["name"]),
-    )
+    ).with_config({"recursion_limit": 4 * (definition.limits.get("max_iter") or 10) + 20})
 
 
 def build_tasks(definition, task_def, topic: str, context: list) -> list[dict]:

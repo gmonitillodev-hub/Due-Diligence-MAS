@@ -1,8 +1,8 @@
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
 
 
-class RiskAnalyst_Agent(SpecAgent):
+class RiskAnalyst_Agent(DDAgent):
     name = AgentName.RISK_ANALYST
 
     tasks_def = {

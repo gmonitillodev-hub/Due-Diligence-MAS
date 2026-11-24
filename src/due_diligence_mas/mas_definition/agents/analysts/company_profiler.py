@@ -1,10 +1,9 @@
 from due_diligence_mas.mas_definition.classes import CompanyProfile
-from due_diligence_mas.mas_definition.agents.spec import SpecAgent, TaskDef
+from due_diligence_mas.mas_definition.agents.dd_agent import DDAgent, TaskDef
 from due_diligence_mas.mas_definition.constants.agents_definition import AgentName
-from due_diligence_mas.mas_definition.constants.common import Framework
 
 
-class CompanyProfiler_Agent(SpecAgent):
+class CompanyProfiler_Agent(DDAgent):
     name = AgentName.COMPANY_PROFILER
     tools = ("tavily_profile_search", "tavily_page_extractor", "current_context",)
 
@@ -31,19 +30,3 @@ class CompanyProfiler_Agent(SpecAgent):
             output_schema=CompanyProfile,
         ),
     }
-
-    def __init__(self, framework: Framework = Framework.CREW_AI):
-        """Keep the raw final output of every execution delegated to this agent, in order."""
-        self.raw_outputs: list[str] = []
-        super().__init__(framework)
-
-    def crewai_kwargs(self) -> dict:
-        return {"step_callback": self._collect_raw_output}
-
-    def _collect_raw_output(self, step):
-        """Store the final answers only: the callback also receives tool results."""
-        from crewai.agents.parser import AgentFinish
-
-        if isinstance(step, AgentFinish):
-            self.raw_outputs.append(step.text)
-            print(f"\n  [Profiler] execution {len(self.raw_outputs)} finished ({len(step.text)} chars)\n")
